@@ -1,0 +1,43 @@
+body,
+html {
+  margin: 0;
+}
+
+html {
+  height: 100vh;
+  margin: 0;
+  width: 100vw;
+}
+
+body {
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+#tekstBoks {
+  font-size: 40px;
+  -moz-text-align-last: center; /* Firefox 12+ */
+  text-align-last: left;
+  justify-content: center;
+  padding: 1em;
+  width: 100vw;
+  max-height: 100vh;
+  white-space: normal;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+#tekstBoks:disabled {
+  border: 15px solid blue;
+}
+
+#tekstBoks:enabled {
+  border: 15px solid red;
+}
