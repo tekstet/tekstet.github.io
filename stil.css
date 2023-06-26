@@ -22,7 +22,7 @@ body {
 }
 
 #tekstBoks {
-  font-size: 40px;
+  font-size: 60px;
   -moz-text-align-last: center; /* Firefox 12+ */
   text-align-last: left;
   justify-content: center;

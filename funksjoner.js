@@ -74,6 +74,7 @@ talegjennkjenning.onstart = function () {
   console.log("Tale startet");
   settTekstBoksTekstTil("(Nå lytter vi og skal skrive ned det som blir sagt)");
   tekstBoks.disabled = false;
+  holdSkjermVaaken();
 };
 
 talegjennkjenning.onend = function () {
@@ -99,6 +100,7 @@ function lytterIkkeLengre() {
   settTekstBoksTekstTil("(sluttet å lytte)");
   tekstBoks.disabled = true;
   talegjennkjenningErPaa = false;
+  laSkjermSovne();
 }
 
 window.addEventListener(
@@ -146,3 +148,30 @@ window.addEventListener(
   },
   true
 );
+
+var skjermLaas;
+
+function isScreenLockSupported() {
+  return "wakeLock" in navigator;
+}
+
+async function holdSkjermVaaken() {
+  if (isScreenLockSupported()) {
+    try {
+      skjermLaas = await navigator.wakeLock.request("screen");
+      console.log("Hindrer skjerm i å sovne");
+    } catch (err) {
+      console.log(err.name, err.message);
+    }
+    return skjermLaas;
+  }
+}
+
+function laSkjermSovne() {
+  if (typeof skjermLaas !== "undeinfed" && skjermLaas != null) {
+    skjermLaas.release().then(() => {
+      console.log("lar skjerm sovne");
+      skjermLaas = null;
+    });
+  }
+}
