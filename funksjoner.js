@@ -15,6 +15,7 @@ var tekstBoks = document.getElementById("tekstBoks");
 document.body.onload = function () {
   justerTekstBoksHoyde();
   talegjennkjenning.start();
+  justerTekstBoksHoyde();
 };
 
 talegjennkjenning.onresult = function (event) {
@@ -126,6 +127,15 @@ window.addEventListener(
   },
   false
 );
+
+window.addEventListener(
+  "click",
+  function (event) {
+    document.body.requestFullscreen();
+  },
+  false
+);
+
 document.addEventListener("keydown", tastetrykk, false);
 
 function tastetrykk(e) {
