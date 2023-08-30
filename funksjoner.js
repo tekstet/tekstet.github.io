@@ -3,8 +3,11 @@
 Hvor mange samtaler kan man ha samtidig
 
 
-
 */
+const synth = window.speechSynthesis;
+console.log(synth.getVoices());
+let utterance = new SpeechSynthesisUtterance("Hello world!");
+speechSynthesis.speak(utterance);
 
 var startAutomatisk = true;
 var whisperTalegjennkjenning = true;
@@ -17,7 +20,7 @@ var skjermLaas;
 var forrigeTekst = "";
 
 var tekstBoks = document.getElementById("tekstBoks");
-var metodevalg = document.getElementById("metodevalg");
+var innstillinger = document.getElementById("innstillinger");
 var whisperValg = document.getElementById("whisper");
 var whisperBeholder = document.getElementById("whisperBeholder");
 var googleValg = document.getElementById("google");
@@ -28,21 +31,32 @@ var tekstBoksBeholder = document.getElementById("tekstBoksBeholder");
 var bekreftMetodeKnapp = document.getElementById("bekreftMetodeKnapp");
 var visValgIgjenKnapp = document.getElementById("visValgIgjenKnapp");
 var startOgStoppKnapp = document.getElementById("startOgStoppKnapp");
+var testStemmeKnapp = document.getElementById("testStemmeKnapp");
+var stemmeTestTekstInput = document.getElementById("stemmeTestTekstInput");
+var volumeInput = document.getElementById("volume");
+var rateInput = document.getElementById("rate");
+var pitchInput = document.getElementById("pitch");
+var voiceSelect = document.getElementById("voice");
 
 document.body.onload = function () {
   visTekstboks(false);
   sjekkStotteForMetoder();
   fjernValgteRadioKnapper();
-  visMetodeValg(true);
+  visinnstillinger(true);
   bekreftMetodeKnapp.addEventListener("click", bekreftMetodeTrykket);
-  visValgIgjenKnapp.addEventListener("click", endreMetodeValgTrykket);
+  visValgIgjenKnapp.addEventListener("click", endreinnstillingerTrykket);
   startOgStoppKnapp.addEventListener("click", startOgStoppTrykket);
-  whisperValg.addEventListener("click", metodeValgVisualisering);
-  googleValg.addEventListener("click", metodeValgVisualisering);
-  webkitValg.addEventListener("click", metodeValgVisualisering);
+  whisperValg.addEventListener("click", innstillingerVisualisering);
+  googleValg.addEventListener("click", innstillingerVisualisering);
+  webkitValg.addEventListener("click", innstillingerVisualisering);
+  testStemmeKnapp.addEventListener("click", function (e) {
+    if (stemmeTestTekstInput.value.length > 0) {
+      si(stemmeTestTekstInput.value);
+    }
+  });
 };
 
-function metodeValgVisualisering() {
+function innstillingerVisualisering() {
   if (whisperValg.checked) {
     whisperBeholder.classList.add("selected");
   } else {
@@ -99,6 +113,37 @@ function sjekkStotteForMetoder() {
   ) {
     console.log("Ingen metoder støttes"); //TODO advar og hjelp
   }
+
+  if ("speechSynthesis" in window) {
+    console.log("Tale syntese støttes");
+  } else {
+    console.log("Tale syntese støttes ikke i denne nettleseren");
+  }
+}
+
+function lastInnStemmer() {
+  var voices = speechSynthesis.getVoices();
+
+  voices.forEach(function (voice, i) {
+    if (voice.lang.includes("nb-NO")) {
+      var stemmeValg = document.createElement("option");
+      stemmeValg.value = voice.name;
+      stemmeValg.innerHTML = voice.name;
+
+      voiceSelect.appendChild(stemmeValg);
+    }
+  });
+  voices.forEach(function (voice, i) {
+    if (voice.lang.includes("en-")) {
+      var stemmeValg = document.createElement("option");
+      stemmeValg.value = voice.name;
+      stemmeValg.innerHTML = voice.name;
+      if (voice.lang) {
+        stemmeValg.innerHTML += "   (" + voice.lang + ")";
+      }
+      voiceSelect.appendChild(stemmeValg);
+    }
+  });
 }
 
 function fjernValgteRadioKnapper() {
@@ -107,17 +152,17 @@ function fjernValgteRadioKnapper() {
   webkitValg.checked = false;
 }
 
-function visMetodeValg(avEllerPaa) {
+function visinnstillinger(avEllerPaa) {
   if (avEllerPaa) {
-    metodevalg.style.display = "block";
-    metodevalg.disabled = false;
+    innstillinger.style.display = "block";
+    innstillinger.disabled = false;
     visValgIgjenKnapp.style.display = "none";
     visValgIgjenKnapp.disabled = true;
-    metodevalg.disabled = false;
-    metodeValgVisualisering();
+    innstillinger.disabled = false;
+    innstillingerVisualisering();
   } else {
-    metodevalg.style.display = "none";
-    metodevalg.disabled = true;
+    innstillinger.style.display = "none";
+    innstillinger.disabled = true;
     visValgIgjenKnapp.style.display = "block";
     visValgIgjenKnapp.disabled = false;
   }
@@ -130,13 +175,13 @@ function visTekstboks(avEllerPaa) {
   }
 }
 
-function endreMetodeValgTrykket() {
+function endreinnstillingerTrykket() {
   if (talegjennkjenning) {
     if (talegjennkjenningErPaa) {
       talegjennkjenning.stop();
     }
   }
-  visMetodeValg(true);
+  visinnstillinger(true);
   visTekstboks(false);
 }
 
@@ -149,7 +194,7 @@ function startOgStoppTrykket() {
     }
   } else {
     sjekkStotteForMetoder();
-    visMetodeValg(true);
+    visinnstillinger(true);
   }
 }
 
@@ -169,7 +214,7 @@ function bekreftMetodeTrykket() {
   }
 
   if (valgBleTatt) {
-    visMetodeValg(false);
+    visinnstillinger(false);
     visTekstboks(true);
     if (startAutomatisk) {
       startOgStoppTrykket();
@@ -193,11 +238,13 @@ function setOppWebkitTalegjennkjenning() {
   talegjennkjenning.maxAlternatives = 1;
 
   talegjennkjenning.onresult = function (event) {
-    console.log(event.results);
     let nyTekst = "";
     for (let i = 0; i < event.results.length; i++) {
       const element = event.results[i];
       nyTekst += element[0].transcript;
+      if (element.isFinal === true && i === event.results.length - 1) {
+        si(element[0].transcript);
+      }
     }
     nyTekst = erstattOrd(nyTekst);
     settTekstBoksTekstTil(forrigeTekst + nyTekst);
@@ -208,7 +255,7 @@ function setOppWebkitTalegjennkjenning() {
     startOgStoppKnapp.value = "Stopp Talegjennkjenning";
     startOgStoppKnapp.textContent;
     console.log("Tale startet");
-    leggTilStatusInfoItekstboks("  [Lytter nå]  ");
+    leggTilStatusInfoItekstboks("  [LYTTER NÅ]  ");
     justerTekstBoksHoyde();
     tekstBoks.disabled = false;
     holdSkjermVaaken();
@@ -230,7 +277,7 @@ function setOppWebkitTalegjennkjenning() {
   };
 
   talegjennkjenning.onnomatch = function (event) {
-    console.log(event);
+    console.log("ingen match for tale");
   };
 }
 
@@ -284,11 +331,37 @@ function justerTekstBoksHoyde() {
 
 function sluttetAaLytte() {
   forrigeTekst = tekstUtenStatus() + " ";
-  leggTilStatusInfoItekstboks("  [sluttet å lytte]  ");
+  leggTilStatusInfoItekstboks("  [SLUTTET Å LYTTE]  ");
   tekstBoks.disabled = true;
   talegjennkjenningErPaa = false;
   startOgStoppKnapp.value = "Start Talegjennkjenning";
   laSkjermSovne();
+}
+
+function si(tekst) {
+  if (tekst.length > 0) {
+    // Create a new instance of SpeechSynthesisUtterance.
+    var msg = new SpeechSynthesisUtterance();
+
+    // Set the text.
+    msg.text = tekst;
+
+    // Set the attributes.
+    msg.volume = parseFloat(volumeInput.value);
+    msg.rate = parseFloat(rateInput.value);
+    msg.pitch = parseFloat(pitchInput.value);
+
+    // If a voice has been selected, find the voice and set the
+    // utterance instance's voice attribute.
+    if (voiceSelect.value) {
+      msg.voice = speechSynthesis.getVoices().filter(function (voice) {
+        return voice.name == voiceSelect.value;
+      })[0];
+    }
+
+    // Queue this utterance.
+    window.speechSynthesis.speak(msg);
+  }
 }
 
 window.addEventListener(
@@ -296,7 +369,7 @@ window.addEventListener(
   function (event) {
     if (fortsettNaarTilbake && talegjennkjenningErPaa === false) {
       console.log("Fortsetter");
-      leggTilStatusInfoItekstboks("  [klar til å fortsette]  ");
+      leggTilStatusInfoItekstboks("  [KLAR TIL Å FORTSETTE]  ");
       talegjennkjenning.start();
     }
   },
@@ -313,6 +386,10 @@ window.addEventListener(
   false
 );
 
+window.speechSynthesis.onvoiceschanged = function (e) {
+  lastInnStemmer();
+};
+
 /*
 window.addEventListener(
   "click",
@@ -326,7 +403,6 @@ window.addEventListener(
 document.addEventListener("keydown", tastetrykk, false);
 
 function tastetrykk(e) {
-  console.log(e.key);
   if (e.key === "Escape") {
     if (talegjennkjenningErPaa) {
       talegjennkjenning.stop();

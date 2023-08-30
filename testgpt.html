@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>Speech-to-Text with Speaker Diarization</title>
+    </head>
+
+    <body>
+        <h1>Speech-to-Text with Speaker Diarization</h1>
+
+        <label for="api-key">Google API Key:</label>
+        <input type="text" id="api-key" placeholder="Enter your API key">
+        <button onclick="startStreaming()">Start Streaming</button>
+
+        <div id="transcript"></div>
+
+        <script src="https://www.gstatic.com/cloud/libs/speech/v1/speech.min.js"></script>
+        <script>
+            // Function to initialize the Speech-to-Text API client
+            function initializeSpeechClient(apiKey) {
+                return new google.cloud.speech.SpeechClient({
+                    apiKey: apiKey
+                });
+            }
+
+            // Function to handle microphone audio streaming
+            function startStreaming() {
+                const apiKey = document.getElementById("api-key").value;
+
+                // Initialize the Speech-to-Text API client
+                const speechClient = initializeSpeechClient(apiKey);
+
+                // Create a new RecognitionStream to handle the audio stream
+                const recognitionStream = new google.cloud.speech.RecognitionStream();
+
+                // Enable speaker diarization
+                recognitionStream.setDiarizationConfig({
+                    enableSpeakerDiarization: true,
+                    minSpeakerCount: 2,
+                    maxSpeakerCount: 4
+                });
+
+                // Set up event listeners for audio stream data
+                recognitionStream.on('data', handleRecognitionData);
+                recognitionStream.on('error', handleRecognitionError);
+
+                // Start the microphone audio stream
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(function (stream) {
+                        const audioContext = new AudioContext();
+                        const audioSource = audioContext.createMediaStreamSource(stream);
+
+                        const audioProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+                        audioProcessor.onaudioprocess = function (event) {
+                            const inputData = event.inputBuffer.getChannelData(0);
+                            recognitionStream.send(inputData);
+                        };
+
+                        audioSource.connect(audioProcessor);
+                        audioProcessor.connect(audioContext.destination);
+                    })
+                    .catch(function (error) {
+                        console.error('Error accessing microphone:', error);
+                    });
+
+                // Function to handle speech recognition data
+                function handleRecognitionData(data) {
+                    const results = data.results[0].alternatives;
+
+                    // Retrieve speaker information
+                    const speakerTags = data.results[0].speakerTag;
+
+                    // Generate a unique color for each speaker
+                    const speakerColors = {};
+                    speakerTags.forEach(function (speakerTag) {
+                        if (!speakerColors.hasOwnProperty(speakerTag)) {
+                            speakerColors[speakerTag] = getRandomColor();
+                        }
+                    });
+
+                    // Display the transcribed text with speaker color
+                    const transcript = document.getElementById('transcript');
+                    transcript.innerHTML = '';
+                    results.forEach(function (result) {
+                        const speakerTag = result.words[0].speakerTag;
+                        const speakerColor = speakerColors[speakerTag];
+                        const text = result.transcript;
+
+                        const span = document.createElement('span');
+                        span.style.color = speakerColor;
+                        span.textContent = text + ' ';
+                        transcript.appendChild(span);
+                    });
+                }
+
+                // Function to handle speech recognition errors
+                function handleRecognitionError(error) {
+                    console.error('Speech recognition error:', error);
+                }
+
+                // Function to generate a random color
+                function getRandomColor() {
+                    const letters = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'];
+                    let color = '#';
+                    for (let i = 0; i < 6; i++) {
+                        color += letters[Math.floor(Math.random() * 16)];
+                    }
+                    return color;
+                }
+            }
+        </script>
+    </body>
+
+</html>
