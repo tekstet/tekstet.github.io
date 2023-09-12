@@ -6,8 +6,6 @@ Hvor mange samtaler kan man ha samtidig
 */
 const synth = window.speechSynthesis;
 console.log(synth.getVoices());
-let utterance = new SpeechSynthesisUtterance("Hello world!");
-speechSynthesis.speak(utterance);
 
 var startAutomatisk = true;
 var whisperTalegjennkjenning = true;
@@ -33,16 +31,17 @@ var visValgIgjenKnapp = document.getElementById("visValgIgjenKnapp");
 var startOgStoppKnapp = document.getElementById("startOgStoppKnapp");
 var testStemmeKnapp = document.getElementById("testStemmeKnapp");
 var stemmeTestTekstInput = document.getElementById("stemmeTestTekstInput");
-var volumeInput = document.getElementById("volume");
+//var volumeInput = document.getElementById("volume");
 var rateInput = document.getElementById("rate");
-var pitchInput = document.getElementById("pitch");
+//var pitchInput = document.getElementById("pitch");
 var voiceSelect = document.getElementById("voice");
 
 document.body.onload = function () {
-  visTekstboks(false);
+  visinnstillinger(false);
+  visTekstboks(true);
   sjekkStotteForMetoder();
-  fjernValgteRadioKnapper();
-  visinnstillinger(true);
+  setOppWhisperTalegjennkjenning();
+  //fjernValgteRadioKnapper();
   bekreftMetodeKnapp.addEventListener("click", bekreftMetodeTrykket);
   visValgIgjenKnapp.addEventListener("click", endreinnstillingerTrykket);
   startOgStoppKnapp.addEventListener("click", startOgStoppTrykket);
@@ -54,6 +53,10 @@ document.body.onload = function () {
       si(stemmeTestTekstInput.value);
     }
   });
+
+  var x = new SpeechSynthesisUtterance();
+  x.text = "hei dette er norsk";
+  speechSynthesis.speak(x);
 };
 
 function innstillingerVisualisering() {
@@ -243,7 +246,10 @@ function setOppWebkitTalegjennkjenning() {
       const element = event.results[i];
       nyTekst += element[0].transcript;
       if (element.isFinal === true && i === event.results.length - 1) {
-        si(element[0].transcript);
+        nyTekst += ". ";
+        si(element[0].transcript + ". ");
+      } else if (i === event.results.length - 1) {
+        nyTekst += ". ";
       }
     }
     nyTekst = erstattOrd(nyTekst);
@@ -252,7 +258,7 @@ function setOppWebkitTalegjennkjenning() {
 
   talegjennkjenning.onstart = function () {
     talegjennkjenningErPaa = true;
-    startOgStoppKnapp.value = "Stopp Talegjennkjenning";
+    startOgStoppKnapp.value = "Stopp";
     startOgStoppKnapp.textContent;
     console.log("Tale startet");
     leggTilStatusInfoItekstboks("  [LYTTER NÅ]  ");
@@ -320,7 +326,7 @@ function justerTekstBoksHoyde() {
   if (innholdHoyde < maksTotalHoyde) {
     tekstBoks.style.height = tekstBoks.scrollHeight + "px";
   } else {
-    tekstBoks.style.height = "80vh";
+    tekstBoks.style.height = "70vh";
     tekstBoks.scroll({
       top: innholdHoyde,
       left: 0,
@@ -330,11 +336,11 @@ function justerTekstBoksHoyde() {
 }
 
 function sluttetAaLytte() {
-  forrigeTekst = tekstUtenStatus() + " ";
+  forrigeTekst = tekstUtenStatus() + ". ";
   leggTilStatusInfoItekstboks("  [SLUTTET Å LYTTE]  ");
   tekstBoks.disabled = true;
   talegjennkjenningErPaa = false;
-  startOgStoppKnapp.value = "Start Talegjennkjenning";
+  startOgStoppKnapp.value = "Start";
   laSkjermSovne();
 }
 
@@ -347,9 +353,9 @@ function si(tekst) {
     msg.text = tekst;
 
     // Set the attributes.
-    msg.volume = parseFloat(volumeInput.value);
+    msg.volume = 1.0; //parseFloat(volumeInput.value);
     msg.rate = parseFloat(rateInput.value);
-    msg.pitch = parseFloat(pitchInput.value);
+    msg.pitch = 1.0; //parseFloat(pitchInput.value);
 
     // If a voice has been selected, find the voice and set the
     // utterance instance's voice attribute.
@@ -367,6 +373,7 @@ function si(tekst) {
 window.addEventListener(
   "focus",
   function (event) {
+    //TODO vent på godkjenning fra bruker også
     if (fortsettNaarTilbake && talegjennkjenningErPaa === false) {
       console.log("Fortsetter");
       leggTilStatusInfoItekstboks("  [KLAR TIL Å FORTSETTE]  ");
