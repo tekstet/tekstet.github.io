@@ -16,53 +16,58 @@
         <div id="innstillinger">
             <form>
                 <fieldset>
-                    <legend>Velg hvilken metode vi skal bruke for å automatisk gjøre tale til tekst:</legend>
-
-
-
+                    <legend>Velg hvilken teknologi vi skal bruke for å gjøre tale om til tekst</legend>
                     <div id="googleBeholder">
-                        <input type="radio" id="google" name="metode" value="google" />
-                        <label for="google">Google</label>
-                        <p>Google metoden skriver ned det som blir sagt i sanntid. Da sender vi lydopptak over internett
-                            til bedriften Google (i Europa) som sier at de ikke lagrer eller deller noe av lyden eller
-                            teksten.
-                        </p>
-                        <a href="https://cloud.google.com/speech-to-text/docs/data-usage-faq" target="_blank">
-                            Mer om Google metoden</a>
+                        <label for="google"><b>Google</b>
+                            <input type="radio" id="google" name="metode" value="google" />
+                            <p>Ingen forsinkelse. Vi kan skille mellom forskjellige folk som prater.</p>
+                            <p>Lydopptak av alt som blir sagt blir sendt over internett til bedriften Google sine
+                                datamaskiner i EU.</p>
+                            <p>Google sier at de ikke sparer på noe av opptak eller historikk av det som blir sagt.
+                            </p>
+                            <a href="https://cloud.google.com/speech-to-text/docs/data-usage-faq" target="_blank">
+                                Les mer om Google metoden her</a>
+                        </label>
                     </div>
                     <div id="webkitBeholder">
-                        <input type="radio" id="webkit" name="metode" value="webkit" checked />
-                        <label for="webkit">Webkit</label>
-                        <p>Webkit metoden skriver ned det som blir sagt i sanntid, men deler og selger lydopptak og
-                            innhold med andre bedrifter. Den fungerer ved å sende lydopptak over internett.</p>
-                        <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API" target="_blank">
-                            Mer om Webkit metoden</a>
+                        <label for="webkit"><b>Web Speech</b>
+                            <input type="radio" id="webkit" name="metode" value="webkit" checked />
+                            <p>Ingen forsinkelse.</p>
+                            <p>Lydopptak av alt som blir sagt blir sendt over internett til en av mange forskjellige
+                                bedrifter sine datamaskiner.
+                            </p>
+                            <p>Web Speech metoden beholder en historikk av det som blir sagt og lydopptak for å
+                                forbedre sin teknologi eller selge det til andre.</p>
+                            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API" target="_blank">
+                                Les mer om Webkit metoden her</a>
+                        </label>
                     </div>
 
                     <div id="whisperBeholder">
-                        <input type="radio" id="whisper" name="metode" value="whisper" checked />
-                        <label for="whisper">Whisper</label>
-                        <p>Whisper metoden skriver ned det som blir sagt 15 sekunder senere. Den trenger ikke internet
-                            og deler ikke lyd eller innhold med noen</p>
-                        <a href="https://www.uio.no/tjenester/it/forskning/sensitiv/hjelp/hpc/software/whisper.html"
-                            target="_blank">
-                            Mer om Whisper</a>
+                        <label for="whisper"><b>Whisper</b>
+                            <input type="radio" id="whisper" name="metode" value="whisper" checked />
+                            <p>15 sekunder forsinkelse og litt flere feil. </p>
+                            <p>Whisper metoden trenger ikke internet og ingen andre får kopier av lydopptak eller hva
+                                som blir sagt.</p>
+                            <a href="https://www.uio.no/tjenester/it/forskning/sensitiv/hjelp/hpc/software/whisper.html"
+                                target="_blank">
+                                Les mer om Whisper metoden her</a>
+                        </label>
                     </div>
-                    <input id="bekreftMetodeKnapp" type="button" value="Bekreft innstillinger">
-
                 </fieldset>
             </form>
             <div>
                 <h2>Velg stemme</h2>
-
                 <div class="option">
-                    <label for="voice">Stemme</label>
                     <select name="voice" id="voice"></select>
                 </div>
-
                 <div class="option">
                     <label for="rate">Hastighet</label>
-                    <input type="range" min="0.5" max="2" step="0.1" name="rate" id="rate" value="0.8">
+
+                    <div id="hastighetsDiv" class="range-wrap">
+                        <div class="range-value" id="rangeV"></div>
+                        <input id="rate" type="range" min="50" max="160" step="1">
+                    </div>
                 </div>
                 <!--
                     <div class="option">
@@ -75,10 +80,12 @@
                 </div>
             -->
 
-                <input type="text" name="stemmeTestTekstInput" id="stemmeTestTekstInput" x-webkit-speech>
+                <input type="text" name="stemmeTestTekstInput" id="stemmeTestTekstInput" x-webkit-speech
+                    value="test test test">
                 <input id="testStemmeKnapp" type="button" value="Test stemme">
 
             </div>
+            <input id="bekreftInnstillingerKnapp" type="button" value="Bekreft innstillinger">
         </div>
         <div class="overst">
             <input id="visValgIgjenKnapp" type="button" value="Endre innstillinger">
