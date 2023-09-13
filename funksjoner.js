@@ -457,7 +457,7 @@ function si(tekst) {
     // Set the attributes.
     msg.volume = 1.0; //parseFloat(volumeInput.value);
     msg.rate = parseFloat(stemmeHastighetValg.value / 100);
-    msg.pitch = 1.0; //parseFloat(pitchInput.value);
+    msg.pitch = 1.2; //parseFloat(pitchInput.value);
 
     // If a voice has been selected, find the voice and set the
     // utterance instance's voice attribute.
