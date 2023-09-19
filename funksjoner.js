@@ -7,8 +7,8 @@ Hvor mange samtaler kan man ha samtidig
 var stemmeHastighetProsent = 85; //Ser ut som 50-200 funker, men folk liker 80-100
 var hvorSikkerFoerDetSies = 0.9; //Fra 0.0 til 1.0 - 0.89 blir ofte litt dobbelt opp
 var startAutomatisk = true;
-var whisperTalegjennkjenning = true; //Vi later som om de er tilgjengelige for nå
-var googleTalegjennkjenning = true; //Vi later som om de er tilgjengelige for nå
+var whisperTalegjennkjenning = false;
+var googleTalegjennkjenning = false;
 var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
 var talegjennkjenning;
 var talegjennkjenningErPaa = false;
