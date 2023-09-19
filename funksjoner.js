@@ -395,7 +395,7 @@ function justerTekstBoksHoyde() {
   if (innholdHoyde < maksTotalHoyde) {
     tekstBoks.style.height = innholdHoyde + "px";
   } else {
-    tekstBoks.style.height = "70vh";
+    tekstBoks.style.height = "60vh";
   }
   tekstBoks.scroll({
     top: innholdHoyde,
