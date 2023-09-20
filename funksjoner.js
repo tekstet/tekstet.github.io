@@ -150,7 +150,10 @@ function sjekkStotteForMetoder() {
     !SpeechRecognition &&
     !googleTalegjennkjenning
   ) {
-    console.warn("Ingen metoder støttes"); //TODO advar og hjelp
+    console.warn("Ingen metoder støttes");
+    leggTilStatusInfoItekstboks(
+      "  [INGEN TALE TIL TEKST METODER ER TILGJENGELIGE]  "
+    );
   }
 
   if (!"speechSynthesis" in window) {
@@ -501,7 +504,6 @@ window.speechSynthesis.onvoiceschanged = function (e) {
   lastInnStemmer();
 };
 
-/*
 window.addEventListener(
   "click",
   function (event) {
@@ -509,7 +511,6 @@ window.addEventListener(
   },
   false
 );
-*/
 
 document.addEventListener("keydown", tastetrykk, false);
 
