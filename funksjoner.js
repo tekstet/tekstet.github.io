@@ -319,8 +319,8 @@ function setOppWebkitTalegjennkjenning() {
 
   talegjennkjenning.onstart = function () {
     talegjennkjenningErPaa = true;
-    startOgStoppKnapp.value = "Stopp";
-    startOgStoppKnapp.textContent;
+    //startOgStoppKnapp.value = "Av";
+    //startOgStoppKnapp.textContent;
     console.info("Tale startet");
     leggTilStatusInfoItekstboks("  [LYTTER NÅ]  ");
     justerTekstBoksHoyde();
@@ -412,7 +412,7 @@ function sluttetAaLytte() {
   leggTilStatusInfoItekstboks("  [SLUTTET Å LYTTE]  ");
   tekstBoks.disabled = true;
   talegjennkjenningErPaa = false;
-  startOgStoppKnapp.value = "Start";
+  //startOgStoppKnapp.value = "På";
   laSkjermSovne();
 }
 
@@ -507,7 +507,7 @@ window.speechSynthesis.onvoiceschanged = function (e) {
 window.addEventListener(
   "click",
   function (event) {
-    document.body.requestFullscreen();
+    //document.body.requestFullscreen();
   },
   false
 );

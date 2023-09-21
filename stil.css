@@ -51,11 +51,11 @@ body {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
 }
-#tekstBoks:disabled {
+#tekstBoks:enabled {
   border: 10px solid #47abd8;
 }
 
-#tekstBoks:enabled {
+#tekstBoks:disabled {
   border: 10px solid #e71d36;
 }
 
