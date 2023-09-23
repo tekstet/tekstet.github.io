@@ -1,58 +1,55 @@
-//TODO scroll osv. knapper. finn navn fra 5 min +vis navn metode
 /*
 Hvor mange samtaler kan man ha samtidig
-
-
 */
 var stemmeHastighetProsent = 85; //Ser ut som 50-200 funker, men folk liker 80-100
-var hvorSikkerFoerDetSies = 0.9; //Fra 0.0 til 1.0 - 0.89 blir ofte litt dobbelt opp
+var hvorSikkerFoerDetVises = 0.5; //Fra 0.0 til 1.0
+var hvorSikkerFoerDetSies = 0.9; //Fra 0.0 til 1.0
 var startAutomatisk = true;
-var whisperTalegjennkjenning = false;
 var googleTalegjennkjenning = false;
 var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+var whisperTalegjennkjenning = false;
 var talegjennkjenning;
-var talegjennkjenningErPaa = false;
+var talegjennkjenningStatus = 0; //0->av, 1->starter, 2->kjører
 var fortsettNaarTilbake = false;
 var skjermLaas;
-var forrigeTekst = "";
+var forrigeInnhold = "";
 
-var tekstBoks = document.getElementById("tekstBoks");
+var tekstBoks = document.getElementById("tekst-innhold");
 var innstillinger = document.getElementById("innstillinger");
 var whisperValg = document.getElementById("whisper");
-var whisperBeholder = document.getElementById("whisperBeholder");
+var whisperBeholder = document.getElementById("whisper-beholder");
 var googleValg = document.getElementById("google");
-var googleBeholder = document.getElementById("googleBeholder");
+var googleBeholder = document.getElementById("google-beholder");
 var webkitValg = document.getElementById("webkit");
-var webkitBeholder = document.getElementById("webkitBeholder");
-var tekstBoksBeholder = document.getElementById("tekstBoksBeholder");
+var webkitBeholder = document.getElementById("webkit-beholder");
 var bekreftInnstillingerKnapp = document.getElementById(
-  "bekreftInnstillingerKnapp"
+  "bekreft-innstillinger-knapp"
 );
-var visValgIgjenKnapp = document.getElementById("visValgIgjenKnapp");
-var startOgStoppKnapp = document.getElementById("startOgStoppKnapp");
-var testStemmeKnapp = document.getElementById("testStemmeKnapp");
-var stemmeTestTekstInput = document.getElementById("stemmeTestTekstInput");
-//var volumeInput = document.getElementById("volume");
+var visInnstillingerKnapp = document.getElementById("innstillinger-knapp");
+var knapper = document.getElementById("knapper");
+var paaKnapp = document.getElementById("skru-paa");
+var avKnapp = document.getElementById("skru-av");
+var testStemmeKnapp = document.getElementById("test-stemme-knapp");
+var stemmeTestTekstInput = document.getElementById("stemme-test-tekst-input");
 var stemmeHastighetValg = document.getElementById("rate");
 //var pitchInput = document.getElementById("pitch");
 var stemmeValg = document.getElementById("voice");
 var rangeV = document.getElementById("rangeV");
-var hastighetsDiv = document.getElementById("hastighetsDiv");
+var hastighetsDiv = document.getElementById("hastighets-div");
 
 const synth = window.speechSynthesis;
-var nyligSagt = [];
-var forrigeOrdTid = 0;
 const valgSirkelBredde = 20;
 
 document.body.onload = function () {
-  visinnstillinger(false);
-  visTekstboks(true);
+  visinnstillinger(true);
+  visTekstboks(false);
   sjekkStotteForMetoder();
-  setOppWhisperTalegjennkjenning();
+  settOppWhisperTalegjennkjenning();
   //fjernValgteRadioKnapper();
   bekreftInnstillingerKnapp.addEventListener("click", bekreftMetodeTrykket);
-  visValgIgjenKnapp.addEventListener("click", endreinnstillingerTrykket);
-  startOgStoppKnapp.addEventListener("click", startOgStoppTrykket);
+  visInnstillingerKnapp.addEventListener("click", endreinnstillingerTrykket);
+  avKnapp.addEventListener("click", avTrykket);
+  paaKnapp.addEventListener("click", paaTrykket);
   whisperValg.addEventListener("click", innstillingerVisualisering);
   googleValg.addEventListener("click", innstillingerVisualisering);
   webkitValg.addEventListener("click", innstillingerVisualisering);
@@ -151,9 +148,7 @@ function sjekkStotteForMetoder() {
     !googleTalegjennkjenning
   ) {
     console.warn("Ingen metoder støttes");
-    leggTilStatusInfoItekstboks(
-      "  [INGEN TALE TIL TEKST METODER ER TILGJENGELIGE]  "
-    );
+    //TODO leggTilStatusInfoItekstboks(   "  [INGEN TALE TIL TEKST METODER ER TILGJENGELIGE]  ");
   }
 
   if (!"speechSynthesis" in window) {
@@ -163,6 +158,10 @@ function sjekkStotteForMetoder() {
 
 function lastInnStemmer() {
   var voices = speechSynthesis.getVoices();
+  let etStemmeValg = document.createElement("option");
+  etStemmeValg.value = "Ingen";
+  etStemmeValg.innerHTML = "Ingen";
+  stemmeValg.appendChild(etStemmeValg);
 
   voices.forEach(function (voice, i) {
     if (voice.lang.includes("nb-NO")) {
@@ -194,45 +193,48 @@ function fjernValgteRadioKnapper() {
   webkitValg.checked = false;
 }
 
-function visinnstillinger(avEllerPaa) {
-  if (avEllerPaa) {
+function visinnstillinger(paaEllerAv) {
+  if (paaEllerAv) {
     innstillinger.style.display = "block";
     innstillinger.disabled = false;
-    visValgIgjenKnapp.style.display = "none";
-    visValgIgjenKnapp.disabled = true;
     innstillinger.disabled = false;
+    knapper.style.display = "none";
     innstillingerVisualisering();
   } else {
     innstillinger.style.display = "none";
     innstillinger.disabled = true;
-    visValgIgjenKnapp.style.display = "block";
-    visValgIgjenKnapp.disabled = false;
+    knapper.style.display = "flex";
   }
 }
 function visTekstboks(avEllerPaa) {
   if (avEllerPaa) {
-    tekstBoksBeholder.style.display = "block";
+    tekstBoks.style.display = "block";
+    knapper;
   } else {
-    tekstBoksBeholder.style.display = "none";
+    tekstBoks.style.display = "none";
   }
 }
 
 function endreinnstillingerTrykket() {
-  if (talegjennkjenning) {
-    if (talegjennkjenningErPaa) {
-      talegjennkjenning.stop();
+  if (innstillinger.style.display === "none") {
+    if (talegjennkjenning) {
+      if (talegjennkjenningStatus !== 0) {
+        talegjennkjenning.stop();
+      }
     }
+    visinnstillinger(true);
+    visTekstboks(false);
+  } else {
+    visinnstillinger(false);
+    visTekstboks(true);
   }
-  visinnstillinger(true);
-  visTekstboks(false);
 }
 
-function startOgStoppTrykket() {
+function paaTrykket() {
   if (talegjennkjenning) {
-    if (talegjennkjenningErPaa) {
-      talegjennkjenning.stop();
-    } else {
+    if (talegjennkjenningStatus === 0) {
       talegjennkjenning.start();
+      talegjennkjenningStatus = 1;
     }
   } else {
     sjekkStotteForMetoder();
@@ -240,16 +242,24 @@ function startOgStoppTrykket() {
   }
 }
 
+function avTrykket() {
+  if (talegjennkjenning) {
+    if (talegjennkjenningStatus !== 0) {
+      talegjennkjenning.stop();
+    }
+  }
+}
+
 function bekreftMetodeTrykket() {
   let valgBleTatt = false;
   if (whisperValg.checked) {
-    setOppWhisperTalegjennkjenning();
+    settOppWhisperTalegjennkjenning();
     valgBleTatt = true;
   } else if (googleValg.checked) {
-    setOppGoogleTalegjennkjenning();
+    settOppGoogleTalegjennkjenning();
     valgBleTatt = true;
   } else if (webkitValg.checked) {
-    setOppWebkitTalegjennkjenning();
+    settOppWebkitTalegjennkjenning();
     valgBleTatt = true;
   } else {
     console.warn("Ingen metode valgt");
@@ -259,20 +269,20 @@ function bekreftMetodeTrykket() {
     visinnstillinger(false);
     visTekstboks(true);
     if (startAutomatisk) {
-      startOgStoppTrykket();
+      paaTrykket();
     }
   }
 }
 
-function setOppWhisperTalegjennkjenning() {
-  setOppWebkitTalegjennkjenning(); //TODO implementer
+function settOppWhisperTalegjennkjenning() {
+  settOppWebkitTalegjennkjenning(); //TODO implementer
 }
 
-function setOppGoogleTalegjennkjenning() {
-  setOppWebkitTalegjennkjenning(); //TODO implementer
+function settOppGoogleTalegjennkjenning() {
+  settOppWebkitTalegjennkjenning(); //TODO implementer
 }
 
-function setOppWebkitTalegjennkjenning() {
+function settOppWebkitTalegjennkjenning() {
   talegjennkjenning = new SpeechRecognition();
   talegjennkjenning.continuous = true;
   talegjennkjenning.lang = "nb-NO";
@@ -280,51 +290,50 @@ function setOppWebkitTalegjennkjenning() {
   talegjennkjenning.maxAlternatives = 1;
 
   talegjennkjenning.onresult = function (event) {
-    let nyTekst = "";
+    /*while (tekstBoks.firstChild) {
+      tekstBoks.removeChild(tekstBoks.lastChild);
+    }*/
+    var nyttInnhold = document.createElement("div");
+
     for (let i = 0; i < event.results.length; i++) {
-      const element = event.results[i];
-      nyTekst += element[0].transcript;
-      if (i === event.results.length - 1) {
-        if (
-          element[0].confidence > hvorSikkerFoerDetSies ||
-          element.isFinal === true
-        ) {
-          si(element[0].transcript);
-          console.info(
-            "^ med " + Math.round(element[0].confidence * 100) + "% sikkerhet"
-          );
+      if (
+        event.results[i].isFinal ||
+        event.results[i][0].confidence > hvorSikkerFoerDetVises
+      ) {
+        var p = document.createElement("p");
+        p.innerHTML = event.results[i][0].transcript + ".";
+        p.style.color = fargeFraSikkerhet(event.results[i][0].confidence);
+        console.debug(
+          event.results[i][0].transcript +
+            " (" +
+            event.results[i][0].confidence +
+            ")"
+        );
+        if (event.results[i].isFinal) {
+          p.classList += "endelig";
         } else {
-          console.debug(
-            "\t(" +
-              Math.round(element[0].confidence * 100) +
-              "% sikkerhet for: '" +
-              element[0].transcript +
-              "')"
-          );
+          p.classList += "ganske-sikker";
         }
-        nyTekst += ". ";
+        nyttInnhold.appendChild(p);
+        if (
+          event.results[i].isFinal ||
+          event.results[i][0].confidence > hvorSikkerFoerDetSies
+        ) {
+          si(event.results[i][0].transcript);
+        }
       }
     }
-    let naa = performance.now();
-    let tidSidenSiste = naa - forrigeOrdTid;
-    if (tidSidenSiste > 1000) {
-      if (forrigeOrdTid !== 0) {
-        nyligSagt = [];
-      }
-      forrigeOrdTid = naa;
-    }
-    nyTekst = erstattOrd(nyTekst);
-    settTekstBoksTekstTil(forrigeTekst + nyTekst);
+    tekstBoks.innerHTML = forrigeInnhold + nyttInnhold.innerHTML;
+    scrollTilNederst();
   };
 
   talegjennkjenning.onstart = function () {
-    talegjennkjenningErPaa = true;
-    //startOgStoppKnapp.value = "Av";
-    //startOgStoppKnapp.textContent;
+    talegjennkjenningStatus = 2;
     console.info("Tale startet");
-    leggTilStatusInfoItekstboks("  [LYTTER NÅ]  ");
-    justerTekstBoksHoyde();
-    tekstBoks.disabled = false;
+    //TODO leggTilStatusInfoItekstboks("  [LYTTER NÅ]  ");
+    scrollTilNederst();
+    tekstBoks.classList.remove("av");
+    tekstBoks.classList.add("paa");
     holdSkjermVaaken();
   };
 
@@ -340,8 +349,7 @@ function setOppWebkitTalegjennkjenning() {
   };
 
   talegjennkjenning.onspeechend = function () {
-    //lytterIkkeLengre();
-    //console.log("Tale sluttet");
+    console.debug("Tale sluttet");
   };
 
   talegjennkjenning.onnomatch = function (event) {
@@ -352,10 +360,12 @@ function setOppWebkitTalegjennkjenning() {
 }
 
 const ordErstanninger = {
+  /*
   " komma": ",",
   " punktum": ".",
   " utropstegn": "!",
   " spørsmålstegn": "?",
+  */
 };
 
 function erstattOrd(tekst) {
@@ -366,66 +376,40 @@ function erstattOrd(tekst) {
   return tekst;
 }
 
-function settTekstBoksTekstTil(denNyeTeksten) {
-  tekstBoks.value = denNyeTeksten;
-  justerTekstBoksHoyde();
-}
-
-function tekstUtenStatus() {
-  return tekstBoks.value.replace(/ *\[[^)]*\] */g, "");
-}
-
-function leggTilStatusInfoItekstboks(ekstraTekst) {
-  settTekstBoksTekstTil(tekstUtenStatus() + ekstraTekst);
-}
-
-function justerTekstBoksHoyde() {
-  var maksTotalHoyde = Math.max(
-    document.body.scrollHeight,
-    document.body.offsetHeight,
-    document.documentElement.clientHeight,
-    document.documentElement.scrollHeight,
-    document.documentElement.offsetHeight
-  );
-  let padding = Number(
-    window
-      .getComputedStyle(tekstBoks, null)
-      .getPropertyValue("padding-top")
-      .replace(/px/, "")
-  );
-  padding = padding * 2;
-  let innholdHoyde = tekstBoks.scrollHeight + padding;
-  if (innholdHoyde < maksTotalHoyde) {
-    tekstBoks.style.height = innholdHoyde + "px";
-  } else {
-    tekstBoks.style.height = "60vh";
-  }
+function scrollTilNederst() {
   tekstBoks.scroll({
-    top: innholdHoyde,
+    top: tekstBoks.scrollHeight,
     left: 0,
     behavior: "smooth", //Auto for rask, smooth for treg
   });
 }
 
 function sluttetAaLytte() {
-  forrigeTekst = tekstUtenStatus();
-  leggTilStatusInfoItekstboks("  [SLUTTET Å LYTTE]  ");
-  tekstBoks.disabled = true;
-  talegjennkjenningErPaa = false;
-  //startOgStoppKnapp.value = "På";
+  forrigeInnhold = tekstBoks.innerHTML;
+  //TODO leggTilStatusInfoItekstboks("  [SLUTTET Å LYTTE]  ");
+  tekstBoks.classList.add("av");
+  tekstBoks.classList.remove("paa");
+  talegjennkjenningStatus = 0;
   laSkjermSovne();
 }
 
 function tekstUtenSagt(tekstSomSjekkes) {
   if (tekstSomSjekkes) {
-    let tekstSomSjekkesListe = tekstSomSjekkes.split(" ");
+    let tekstSomSjekkesListe = tekstSomSjekkes.toLowerCase().split(" ");
     tekstSomSjekkesListe = tekstSomSjekkesListe.filter((item) => item);
     if (tekstSomSjekkesListe && tekstSomSjekkesListe.length > 0) {
       let funnetPlassering = nyligSagt.lastIndexOf(tekstSomSjekkesListe[0]);
       if (funnetPlassering > -1) {
-        for (let i = 1; i < tekstSomSjekkesListe.length; i++) {
-          if (nyligSagt[funnetPlassering + i] !== tekstSomSjekkesListe[i]) {
-            return tekstSomSjekkesListe.slice(i);
+        if (
+          tekstSomSjekkesListe.length === 1 &&
+          funnetPlassering !== nyligSagt.length - 1
+        ) {
+          return tekstSomSjekkesListe;
+        } else {
+          for (let i = 1; i < tekstSomSjekkesListe.length; i++) {
+            if (nyligSagt[funnetPlassering + i] !== tekstSomSjekkesListe[i]) {
+              return tekstSomSjekkesListe.slice(i);
+            }
           }
         }
       } else {
@@ -433,46 +417,33 @@ function tekstUtenSagt(tekstSomSjekkes) {
       }
     }
   }
-}
-
-function rensTekst(tekst) {
-  if (tekst) {
-    return tekst.replace(/[^a-z0-9]/gi, "");
-  } else {
-    return "";
-  }
+  return [];
 }
 
 function si(tekst) {
-  if (tekst.length > 0) {
+  if (stemmeValg.value !== "Ingen" && tekst.length > 0) {
     let nyeOrdIListe = tekstUtenSagt(tekst);
     if (!nyeOrdIListe || nyeOrdIListe.length < 1) {
       return;
     }
     tekst = nyeOrdIListe.join(" ");
 
-    // Create a new instance of SpeechSynthesisUtterance.
     var msg = new SpeechSynthesisUtterance();
 
-    // Set the text.
     msg.text = tekst;
 
-    // Set the attributes.
     msg.volume = 1.0; //parseFloat(volumeInput.value);
     msg.rate = parseFloat(stemmeHastighetValg.value / 100);
     msg.pitch = 1.2; //parseFloat(pitchInput.value);
 
-    // If a voice has been selected, find the voice and set the
-    // utterance instance's voice attribute.
     if (stemmeValg.value) {
       msg.voice = speechSynthesis.getVoices().filter(function (voice) {
         return voice.name == stemmeValg.value;
       })[0];
     }
 
-    // Queue this utterance.
     window.speechSynthesis.speak(msg);
-    console.log("'" + tekst + "'");
+    console.debug("sier: '" + tekst + "'");
     nyligSagt = nyligSagt.concat(nyeOrdIListe);
   }
 }
@@ -481,10 +452,11 @@ window.addEventListener(
   "focus",
   function (event) {
     //TODO vent på godkjenning fra bruker også
-    if (fortsettNaarTilbake && talegjennkjenningErPaa === false) {
+    if (fortsettNaarTilbake && talegjennkjenningStatus === 0) {
       console.info("Fortsetter");
-      leggTilStatusInfoItekstboks("  [KLAR TIL Å FORTSETTE]  ");
+      //TODO leggTilStatusInfoItekstboks("  [KLAR TIL Å FORTSETTE]  ");
       talegjennkjenning.start();
+      talegjennkjenningStatus = 1;
     }
   },
   false
@@ -493,7 +465,7 @@ window.addEventListener(
 window.addEventListener(
   "blur",
   function (event) {
-    if (talegjennkjenningErPaa) {
+    if (talegjennkjenningStatus !== 0) {
       fortsettNaarTilbake = true;
     }
   },
@@ -516,12 +488,13 @@ document.addEventListener("keydown", tastetrykk, false);
 
 function tastetrykk(e) {
   if (e.key === "Escape") {
-    if (talegjennkjenningErPaa) {
+    if (talegjennkjenningStatus !== 0) {
       talegjennkjenning.stop();
     }
   } else if (e.key === "Enter") {
-    if (talegjennkjenningErPaa === false) {
+    if (talegjennkjenningStatus === 0) {
       talegjennkjenning.start();
+      talegjennkjenningStatus = 1;
     }
   }
 }
@@ -529,7 +502,7 @@ function tastetrykk(e) {
 window.addEventListener(
   "resize",
   function (event) {
-    justerTekstBoksHoyde();
+    scrollTilNederst();
   },
   true
 );
@@ -557,4 +530,23 @@ function laSkjermSovne() {
       skjermLaas = null;
     });
   }
+}
+
+function skalerTall(tall, min1, max1, min2, max2) {
+  let nyttTall = min2 + ((max2 - min2) * (tall - min1)) / (max1 - min1);
+  if (nyttTall > max2) {
+    return max2;
+  } else if (nyttTall < min2) {
+    return min2;
+  } else {
+    return nyttTall;
+  }
+}
+
+function fargeFraSikkerhet(sikkerhet) {
+  return (
+    "rgb(" +
+    (255 - Math.round(skalerTall(sikkerhet, 0.1, 0.94, 0, 255))) +
+    ",0,0)"
+  );
 }

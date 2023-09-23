@@ -6,112 +6,90 @@
         <meta name="viewport" content="width=device-width" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <title>Auto-tolk</title>
         <link rel="stylesheet" href="stil.css" />
-
+        <title>Auto-tolk</title>
     </head>
 
     <body>
-        <h1>Auto-tolk</h1>
-        <div id="innstillinger">
-            <form>
-                <fieldset>
-                    <legend>Velg hvilken teknologi vi skal bruke for å gjøre tale om til tekst</legend>
-                    <div id="googleBeholder">
-                        <label for="google"><b>Google</b>
-                            <input type="radio" id="google" name="metode" value="google" />
-                            <p>Ingen forsinkelse. Vi kan skille mellom forskjellige folk som prater.</p>
-                            <p>Lydopptak av alt som blir sagt blir sendt over internett til bedriften Google sine
-                                datamaskiner i EU.</p>
-                            <p>Google sier at de ikke sparer på noe av opptak eller historikk av det som blir sagt.
-                            </p>
-                            <a href="https://cloud.google.com/speech-to-text/docs/data-usage-faq" target="_blank">
-                                Les mer om Google metoden her</a>
-                        </label>
-                    </div>
-                    <div id="webkitBeholder">
-                        <label for="webkit"><b>Web Speech</b>
-                            <input type="radio" id="webkit" name="metode" value="webkit" checked />
-                            <p>Ingen forsinkelse.</p>
-                            <p>Lydopptak av alt som blir sagt blir sendt over internett til en av mange forskjellige
-                                bedrifter sine datamaskiner.
-                            </p>
-                            <p>Web Speech metoden beholder en historikk av det som blir sagt og lydopptak for å
-                                forbedre sin teknologi eller selge det til andre.</p>
-                            <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API" target="_blank">
-                                Les mer om Web Speech metoden her</a>
-                        </label>
-                    </div>
-
-                    <div id="whisperBeholder">
-                        <label for="whisper"><b>Whisper</b>
-                            <input type="radio" id="whisper" name="metode" value="whisper" checked />
-                            <p>15 sekunder forsinkelse og litt flere feil. </p>
-                            <p>Whisper metoden trenger ikke internet og ingen andre får kopier av lydopptak eller hva
-                                som blir sagt.</p>
-                            <a href="https://www.uio.no/tjenester/it/forskning/sensitiv/hjelp/hpc/software/whisper.html"
-                                target="_blank">
-                                Les mer om Whisper metoden her</a>
-                        </label>
-                    </div>
-                </fieldset>
-            </form>
-            <div>
-                <h2>Velg stemme</h2>
-                <div class="option">
-                    <select name="voice" id="voice"></select>
-                </div>
-                <div class="option">
-                    <label for="rate">Hastighet</label>
-
-                    <div id="hastighetsDiv" class="range-wrap">
-                        <div class="range-value" id="rangeV"></div>
-                        <input id="rate" type="range" min="50" max="160" step="1">
-                    </div>
-                </div>
-                <!--
-                    <div class="option">
-                    <label for="volume">Volum</label>
-                    <input type="range" min="0" max="1" step="0.1" name="volume" id="volume" value="1">
-                </div>
-                <div class="option">
-                    <label for="pitch">Tonehøyde</label>
-                    <input type="range" min="0" max="2" step="0.1" name="pitch" id="pitch" value="1">
-                </div>
-            -->
-
-                <input type="text" name="stemmeTestTekstInput" id="stemmeTestTekstInput" x-webkit-speech
-                    value="test test test">
-                <input id="testStemmeKnapp" type="button" value="Test stemme">
-
+        <button id="innstillinger-knapp">Tilpass</button>
+        <div id="sentrer-inni">
+            <h1 id="overskrift">Auto-tolk</h1>
+            <div id="tekst-innhold" class="av">
             </div>
-            <input id="bekreftInnstillingerKnapp" type="button" value="Bekreft innstillinger">
-        </div>
-        <div class="overst">
-            <input id="visValgIgjenKnapp" type="button" value="Endre innstillinger">
-        </div>
+            <div id="knapper">
+                <button id="skru-paa">Kjør</button>
+                <button id="skru-av">Avslutt</button>
+            </div>
+            <div id="innstillinger">
+                <form>
+                    <fieldset>
+                        <legend>Velg hvilken teknologi vi skal bruke for å gjøre tale om til tekst</legend>
+                        <div id="google-beholder" class="teknologi-valg">
+                            <label for="google"><b>1 - Google</b>
+                                <input type="radio" id="google" name="metode" value="google" autocomplete="on" />
+                                <p>Nesten ingen forsinkelse, og vi kan skille mellom forskjellige folk som prater.</p>
+                                <p>Lydopptak av alt som blir sagt blir sendt over internett til bedriften Google sine
+                                    datamaskiner i EU.</p>
+                                <p>Google sier at de ikke sparer på noe av opptak eller historikk av det som blir sagt.
+                                </p>
+                                <a href="https://cloud.google.com/speech-to-text/docs/data-usage-faq" target="_blank">
+                                    Les mer om Google metoden her</a>
+                            </label>
+                        </div>
+                        <div id="webkit-beholder" class="teknologi-valg">
+                            <label for="webkit"><b>2 - Web Speech</b>
+                                <input type="radio" id="webkit" name="metode" value="webkit" autocomplete="on" />
+                                <p>Ingen forsinkelse.</p>
+                                <p>Lydopptak av alt som blir sagt blir sendt over internett til en av mange forskjellige
+                                    bedrifter sine datamaskiner.
+                                </p>
+                                <p>Web Speech metoden beholder en historikk av det som blir sagt og lydopptak for å
+                                    forbedre sin teknologi eller selge det til andre.</p>
+                                <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API"
+                                    target="_blank">
+                                    Les mer om Web Speech metoden her</a>
+                            </label>
+                        </div>
 
+                        <div id="whisper-beholder" class="teknologi-valg">
+                            <label for="whisper"><b>3 - Whisper</b>
+                                <input type="radio" id="whisper" name="metode" value="whisper" autocomplete="on" />
+                                <p>15 sekunder forsinkelse og litt flere feil. </p>
+                                <p>Whisper metoden trenger ikke internet og ingen andre får kopier av lydopptak eller
+                                    hva
+                                    som blir sagt.</p>
+                                <a href="https://www.uio.no/tjenester/it/forskning/sensitiv/hjelp/hpc/software/whisper.html"
+                                    target="_blank">
+                                    Les mer om Whisper metoden her</a>
+                            </label>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Velg stemme</legend>
+                        <div class="option">
+                            <select name="voice" id="voice" autocomplete="on"></select>
+                        </div>
+                        <div class="option">
+                            <label for="rate">Hastighet</label>
 
-        <div id="tekstBoksBeholder">
-            <textarea id="tekstBoks" readonly disabled>
-                [KLAR]
-            </textarea>
-            <br>
-
-            <div id="fargeForklaring">
-
-                <span class="Legend-colorBox" style="background-color: #e71d36;">
-                </span>
-                <span class="Legend-label">
-                    Lytter ikke
-                </span>
-
-                <span class="Legend-colorBox" style="background-color: #47abd8;">
-                </span>
-                <span class="Legend-label">
-                    Lytter nå
-                </span>
-
+                            <div id="hastighets-div" class="range-wrap">
+                                <div class="range-value" id="rangeV"></div>
+                                <input name="hastighet" id="rate" type="range" min="50" max="160" step="1"
+                                    autocomplete="on">
+                            </div>
+                        </div>
+                        <!--
+                        <div class="option">
+                            <label for="pitch">Tonehøyde</label>
+                            <input type="range" min="0" max="2" step="0.1" name="pitch" id="pitch" value="1">
+                        </div>
+                        -->
+                        <input type="text" name="stemme-test-tekst-input" id="stemme-test-tekst-input" x-webkit-speech
+                            value="test test test">
+                        <input id="test-stemme-knapp" type="button" value="Test stemmen">
+                    </fieldset>
+                </form>
+                <input id="bekreft-innstillinger-knapp" type="button" value="Bekreft innstillinger">
             </div>
         </div>
         <script src="funksjoner.js"></script>
