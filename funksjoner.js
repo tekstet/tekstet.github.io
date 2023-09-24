@@ -161,6 +161,10 @@ function sjekkStotteForMetoder() {
   if (!"speechSynthesis" in window) {
     console.warn("Tale syntese støttes ikke i denne nettleseren");
   }
+
+  if (!document.fullscreenEnabled) {
+    fullskjermKnapp.style.display = "none";
+  }
 }
 
 function lastInnStemmer() {
