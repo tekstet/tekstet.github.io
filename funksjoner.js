@@ -570,13 +570,12 @@ function fargeFraSikkerhet(sikkerhet) {
   );
 }
 
-function fullskjermAvPaa() {
+function fullskjermAvPaa(element) {
   if (
-    !document.fullscreenElement && // alternative standard method
+    !document.fullscreenElement &&
     !document.mozFullScreenElement &&
     !document.webkitFullscreenElement
   ) {
-    // current working methods
     if (document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen();
     } else if (document.documentElement.mozRequestFullScreen) {
