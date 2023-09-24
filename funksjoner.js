@@ -6,7 +6,7 @@ var hvorSikkerFoerDetVises = 0.5; //Fra 0.0 til 1.0
 var hvorSikkerFoerDetSies = 0.9; //Fra 0.0 til 1.0
 var startAutomatisk = true;
 var googleTalegjennkjenning = false;
-var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+var webSpeechTalegjennkjenning;
 var whisperTalegjennkjenning = false;
 var talegjennkjenning;
 var talegjennkjenningStatus = 0; //0-> er av, 1->skal endres, 2->er på
@@ -22,15 +22,11 @@ var googleValg = document.getElementById("google");
 var googleBeholder = document.getElementById("google-beholder");
 var webkitValg = document.getElementById("webkit");
 var webkitBeholder = document.getElementById("webkit-beholder");
-var velgStemmeDel = document.getElementById("velg-stemme-del");
-var stemmeIkkeTilgjengelig = document.getElementById(
-  "stemme-ikke-tilgjengelig"
-);
-
 var bekreftInnstillingerKnapp = document.getElementById(
   "bekreft-innstillinger-knapp"
 );
 var visInnstillingerKnapp = document.getElementById("innstillinger-knapp");
+var fullskjermKnapp = document.getElementById("fullskjerm-knapp");
 var knapper = document.getElementById("knapper");
 var paaKnapp = document.getElementById("skru-paa");
 var avKnapp = document.getElementById("skru-av");
@@ -53,6 +49,7 @@ document.body.onload = function () {
   fjernValgteRadioKnapper();
   bekreftInnstillingerKnapp.addEventListener("click", bekreftMetodeTrykket);
   visInnstillingerKnapp.addEventListener("click", endreinnstillingerTrykket);
+  fullskjermKnapp.addEventListener("click", fullskjermAvPaa);
   avKnapp.addEventListener("click", avTrykket);
   paaKnapp.addEventListener("click", paaTrykket);
   whisperValg.addEventListener("click", innstillingerVisualisering);
@@ -95,6 +92,7 @@ document.body.onload = function () {
   });
   stemmeHastighetValg.value = stemmeHastighetProsent;
   stemmeHastighetValg.dispatchEvent(new Event("input", { bubbles: true }));
+  setTimeout(lastInnStemmer, 1300);
 };
 
 function innstillingerVisualisering() {
@@ -138,7 +136,11 @@ function sjekkStotteForMetoder() {
     googleValg.disabled = true;
     googleValg.checked = false;
   }
-  if (SpeechRecognition) {
+  //Webkit / Web Speech
+  try {
+    webSpeechTalegjennkjenning = webkitSpeechRecognition;
+  } catch (ReferenceError) {}
+  if (webSpeechTalegjennkjenning) {
     webkitBeholder.classList.remove("unavailable");
     webkitValg.disabled = false;
   } else {
@@ -149,7 +151,7 @@ function sjekkStotteForMetoder() {
 
   if (
     !whisperTalegjennkjenning &&
-    !SpeechRecognition &&
+    !webSpeechTalegjennkjenning &&
     !googleTalegjennkjenning
   ) {
     console.warn("Ingen metoder støttes");
@@ -162,6 +164,10 @@ function sjekkStotteForMetoder() {
 }
 
 function lastInnStemmer() {
+  var velgStemmeDel = document.getElementById("velg-stemme-del");
+  var stemmeIkkeTilgjengelig = document.getElementById(
+    "stemme-ikke-tilgjengelig"
+  );
   var voices = speechSynthesis.getVoices();
   if (!voices || voices.length <= 0) {
     velgStemmeDel.style.display = "none";
@@ -279,7 +285,7 @@ function bekreftMetodeTrykket() {
     settOppWebkitTalegjennkjenning();
     noeErValgt = true;
   } else {
-    console.warn("Ingen metode valgt");
+    //TODO advar om at ingenting er valgt
   }
 
   if (noeErValgt) {
@@ -300,7 +306,7 @@ function settOppGoogleTalegjennkjenning() {
 }
 
 function settOppWebkitTalegjennkjenning() {
-  talegjennkjenning = new SpeechRecognition();
+  talegjennkjenning = new webSpeechTalegjennkjenning();
   talegjennkjenning.continuous = true;
   talegjennkjenning.lang = "nb-NO";
   talegjennkjenning.interimResults = true;
@@ -562,4 +568,31 @@ function fargeFraSikkerhet(sikkerhet) {
     (255 - Math.round(skalerTall(sikkerhet, 0.1, 0.94, 0, 255))) +
     ",0,0)"
   );
+}
+
+function fullskjermAvPaa() {
+  if (
+    !document.fullscreenElement && // alternative standard method
+    !document.mozFullScreenElement &&
+    !document.webkitFullscreenElement
+  ) {
+    // current working methods
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) {
+      document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen(
+        Element.ALLOW_KEYBOARD_INPUT
+      );
+    }
+  } else {
+    if (document.cancelFullScreen) {
+      document.cancelFullScreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitCancelFullScreen) {
+      document.webkitCancelFullScreen();
+    }
+  }
 }
