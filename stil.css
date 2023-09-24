@@ -148,6 +148,12 @@ label {
   font-size: 2rem;
 }
 
+#stemme-ikke-tilgjengelig {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  display: none;
+}
+
 #bekreft-innstillinger-knapp {
   display: block;
   margin: 0 auto 1rem auto;
