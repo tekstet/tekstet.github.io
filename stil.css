@@ -8,7 +8,7 @@ body {
 }
 
 #overskrift {
-  font-size: 4rem;
+  font-size: min(13vh, 4rem);
   margin: 0;
   display: flex;
   flex-direction: row;
@@ -20,7 +20,7 @@ body {
 
 #sentrer-inni {
   margin: 0;
-  font-size: 3.2rem;
+  font-size: min(15vh, 3rem);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -32,6 +32,7 @@ body {
 }
 
 #tekst-innhold {
+  font-size: min(30vh, 3rem);
   padding-left: 0.4rem;
   padding-right: 0.4rem;
   padding-bottom: 0.2rem;
@@ -64,11 +65,11 @@ body {
   font-weight: lighter;
 }
 .av {
-  border: 10px solid #e71d36;
+  border: 2vw solid #e71d36;
 }
 
 .paa {
-  border: 10px solid #47abd8;
+  border: 2vw solid #47abd8;
 }
 
 #knapper {
@@ -76,31 +77,31 @@ body {
   flex-direction: row;
   justify-content: center;
   max-width: 100vw;
-  padding-top: 0.3rem;
+  padding-top: 1%;
 }
 
 #knapper > * {
-  font-size: 2.3rem;
-  margin: 0 0.6rem 0.2rem 0.6rem;
-  padding: 0.4rem;
+  font-size: min(11vh, 2.3rem);
+  margin: 0 1vw 0.3vw 1vw;
+  padding: min(5vwvh, 0.5rem);
   color: white;
 }
 input {
-  font-size: 2rem;
+  font-size: min(9vh, 2rem);
 }
 
 select {
-  font-size: 2rem;
+  font-size: min(9vh, 2rem);
 }
 
 button {
-  font-size: 1.8rem;
+  font-size: min(8vh, 1.8rem);
   border: none;
   transition-duration: 0.5s;
 }
 
 button:hover {
-  border: 0.2rem solid black;
+  border: 1vw solid black;
 }
 
 #skru-paa {
@@ -114,9 +115,9 @@ button:hover {
   position: fixed;
   top: 0;
   right: 0;
-  padding: 0.3rem;
+  padding: 1.2vw;
   white-space: nowrap;
-  margin: 0.2rem;
+  margin: 1vw;
   color: white;
   background-color: #4caf50;
 }
@@ -132,24 +133,35 @@ form {
 }
 
 fieldset {
-  margin: 1rem 1.5vw 4rem 1.5vw;
+  margin: 1rem 1.5vw 1rem 1.5vw;
   padding: 1rem 1.5vw 1rem 1.5vw;
+}
+
+fieldset:not(:last-child) {
+  margin-bottom: 4rem;
 }
 
 .teknologi-valg {
   margin: 1rem 1.5vw 1rem 1.5vw;
   padding: 1rem 1.5vw 1rem 1.5vw;
-  border: 6px solid rgb(255, 255, 255);
+  border: 1vw solid rgb(255, 255, 255);
   background-color: rgb(174 248 225);
   font-size: 1.5rem;
 }
 
 label {
+  font-size: min(12vh, 2rem);
+}
+
+label p {
   font-size: 2rem;
+}
+label b {
+  font-size: 2.2rem;
 }
 
 #stemme-ikke-tilgjengelig {
-  font-size: 2rem;
+  font-size: min(9vh, 2rem);
   margin-bottom: 2rem;
   display: none;
 }
@@ -157,11 +169,11 @@ label {
 #bekreft-innstillinger-knapp {
   display: block;
   margin: 0 auto 1rem auto;
-  font-size: 2.1rem;
+  font-size: min(10vh, 2.1rem);
 }
 
 #fullskjerm-knapp {
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
 }
 
 .Legend-colorBox {
@@ -220,7 +232,7 @@ input[type="range"]:focus::-webkit-slider-runnable-track {
   text-align: center;
   background: #03a9f4;
   color: #fff;
-  font-size: 1.5rem;
+  font-size: min(7vh, 1.5rem);
   display: block;
   position: absolute;
   left: 50%;
@@ -263,7 +275,7 @@ select {
 }
 
 .selected {
-  border: 6px solid rgb(2, 210, 144);
+  border: 2vw solid rgb(2, 210, 144);
 }
 
 .unavailable {
