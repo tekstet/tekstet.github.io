@@ -32,7 +32,7 @@ body {
 }
 
 #tekst-innhold {
-  font-size: min(30vh, 3rem);
+  font-size: min(26vh, 3rem);
   padding-left: 0.4rem;
   padding-right: 0.4rem;
   padding-bottom: 0.2rem;
