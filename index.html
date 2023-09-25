@@ -26,7 +26,7 @@
                         <legend>Velg hvilken teknologi vi skal bruke for å gjøre tale om til tekst</legend>
                         <div id="google-beholder" class="teknologi-valg">
                             <label for="google"><b>1 - Google</b>
-                                <input type="radio" id="google" name="metode" value="google" autocomplete="on" />
+                                <input type="radio" id="google" name="metode1" value="google" autocomplete="on" />
                                 <p>Nesten ingen forsinkelse, og vi kan skille mellom forskjellige folk som prater.</p>
                                 <p>Lydopptak av alt som blir sagt blir sendt over internett til bedriften Google sine
                                     datamaskiner i EU.</p>
@@ -38,7 +38,7 @@
                         </div>
                         <div id="webkit-beholder" class="teknologi-valg">
                             <label for="webkit"><b>2 - Web Speech</b>
-                                <input type="radio" id="webkit" name="metode" value="webkit" autocomplete="on" />
+                                <input type="radio" id="webkit" name="metode2" value="webkit" autocomplete="on" />
                                 <p>Ingen forsinkelse.</p>
                                 <p>Lydopptak av alt som blir sagt blir sendt over internett til en av mange forskjellige
                                     bedrifter sine datamaskiner.
@@ -53,7 +53,7 @@
 
                         <div id="whisper-beholder" class="teknologi-valg">
                             <label for="whisper"><b>3 - Whisper</b>
-                                <input type="radio" id="whisper" name="metode" value="whisper" autocomplete="on" />
+                                <input type="radio" id="whisper" name="metode3" value="whisper" autocomplete="on" />
                                 <p>15 sekunder forsinkelse og litt flere feil. </p>
                                 <p>Whisper metoden trenger ikke internet og ingen andre får kopier av lydopptak eller
                                     hva
@@ -88,12 +88,12 @@
                         -->
                         <input type="text" name="stemme-test-tekst-input" id="stemme-test-tekst-input" x-webkit-speech
                             value="test test test">
-                        <input id="test-stemme-knapp" type="button" value="Test stemmen">
+                        <button id="test-stemme-knapp">Test stemmen</button>
                     </fieldset>
                 </form>
                 <button id="fullskjerm-knapp">Fullskjerm</button>
-                <input id="bekreft-innstillinger-knapp" type="button" value="Bekreft innstillinger"
-                    title="Velg en metode før du bekrefter">
+                <button id="bekreft-innstillinger-knapp" title="Velg en metode før du bekrefter">
+                    Bekreft innstillinger</button>
             </div>
         </div>
         <script src="funksjoner.js"></script>

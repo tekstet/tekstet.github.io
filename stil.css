@@ -32,7 +32,7 @@ body {
 }
 
 #tekst-innhold {
-  font-size: min(26vh, 3rem);
+  font-size: min(26vh, 5rem);
   padding-left: 0.4rem;
   padding-right: 0.4rem;
   padding-bottom: 0.2rem;
@@ -65,11 +65,11 @@ body {
   font-weight: lighter;
 }
 .av {
-  border: 2vw solid #e71d36;
+  border: min(2vw, 2rem) solid #e71d36;
 }
 
 .paa {
-  border: 2vw solid #47abd8;
+  border: min(2vw, 2rem) solid #47abd8;
 }
 
 #knapper {
@@ -97,11 +97,11 @@ select {
 button {
   font-size: min(8vh, 1.8rem);
   border: none;
-  transition-duration: 0.5s;
+  transition-duration: 0.2s;
 }
 
 button:hover {
-  border: 1vw solid black;
+  border: min(1vw, 1rem) solid black;
 }
 
 #skru-paa {
@@ -144,7 +144,7 @@ fieldset:not(:last-child) {
 .teknologi-valg {
   margin: 1rem 1.5vw 1rem 1.5vw;
   padding: 1rem 1.5vw 1rem 1.5vw;
-  border: 1vw solid rgb(255, 255, 255);
+  border: min(1vw, 1rem) solid rgb(255, 255, 255);
   background-color: rgb(174 248 225);
   font-size: 1.5rem;
 }
@@ -275,7 +275,7 @@ select {
 }
 
 .selected {
-  border: 2vw solid rgb(2, 210, 144);
+  border: min(2vw, 2rem) solid rgb(2, 210, 144);
 }
 
 .unavailable {
