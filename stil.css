@@ -132,14 +132,13 @@ form {
 }
 
 fieldset {
-  margin: 1rem;
-  margin-bottom: 4rem;
-  padding: 1rem;
+  margin: 1rem 1.5vw 4rem 1.5vw;
+  padding: 1rem 1.5vw 1rem 1.5vw;
 }
 
 .teknologi-valg {
-  padding: 1rem;
-  margin: 1rem;
+  margin: 1rem 1.5vw 1rem 1.5vw;
+  padding: 1rem 1.5vw 1rem 1.5vw;
   border: 6px solid rgb(255, 255, 255);
   background-color: rgb(174 248 225);
   font-size: 1.5rem;

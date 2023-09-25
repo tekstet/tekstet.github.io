@@ -1,19 +1,23 @@
-/*
-Hvor mange samtaler kan man ha samtidig
-*/
+//Innstillinger
 var stemmeHastighetProsent = 85; //Ser ut som 50-200 funker, men folk liker 80-100
-var hvorSikkerFoerDetVises = 0.5; //Fra 0.0 til 1.0
-var hvorSikkerFoerDetSies = 0.9; //Fra 0.0 til 1.0
+var sikkerhetForAaVise = 0.5; //Fra 0.0 til 1.0
+var sikkerhetForAaSi = 0.9; //Fra 0.0 til 1.0
 var startAutomatisk = true;
+var fortsettNaarTilbake = false;
+const valgSirkelBredde = 20;
+
+//Globale variabler
+var talegjennkjenning;
 var googleTalegjennkjenning = false;
 var webSpeechTalegjennkjenning;
 var whisperTalegjennkjenning = false;
-var talegjennkjenning;
 var talegjennkjenningStatus = 0; //0-> er av, 1->skal endres, 2->er på
-var fortsettNaarTilbake = false;
 var skjermLaas;
 var forrigeInnhold = "";
+var nyligSagt = [];
+const synth = window.speechSynthesis;
 
+//HTML elementer
 var tekstBoks = document.getElementById("tekst-innhold");
 var innstillinger = document.getElementById("innstillinger");
 var whisperValg = document.getElementById("whisper");
@@ -22,9 +26,6 @@ var googleValg = document.getElementById("google");
 var googleBeholder = document.getElementById("google-beholder");
 var webkitValg = document.getElementById("webkit");
 var webkitBeholder = document.getElementById("webkit-beholder");
-var bekreftInnstillingerKnapp = document.getElementById(
-  "bekreft-innstillinger-knapp"
-);
 var visInnstillingerKnapp = document.getElementById("innstillinger-knapp");
 var fullskjermKnapp = document.getElementById("fullskjerm-knapp");
 var knapper = document.getElementById("knapper");
@@ -37,65 +38,33 @@ var stemmeHastighetValg = document.getElementById("rate");
 var stemmeValg = document.getElementById("voice");
 var rangeV = document.getElementById("rangeV");
 var hastighetsDiv = document.getElementById("hastighets-div");
+var bekreftInnstillingerKnapp = document.getElementById(
+  "bekreft-innstillinger-knapp"
+);
 
-const synth = window.speechSynthesis;
-var nyligSagt = [];
-const valgSirkelBredde = 20;
-
-document.body.onload = function () {
+function oppsett() {
   visinnstillinger(true);
   visTekstboks(false);
-  sjekkStotteForMetoder();
-  fjernValgteRadioKnapper();
+  seHvilkeMetoderSomKanBrukes();
+  fjernValgteMetoder();
   bekreftInnstillingerKnapp.addEventListener("click", bekreftMetodeTrykket);
-  visInnstillingerKnapp.addEventListener("click", endreinnstillingerTrykket);
-  fullskjermKnapp.addEventListener("click", fullskjermAvPaa);
+  visInnstillingerKnapp.addEventListener("click", endreInnstillingerTrykket);
+  fullskjermKnapp.addEventListener("click", endreFullskjermTilstand);
   avKnapp.addEventListener("click", avTrykket);
   paaKnapp.addEventListener("click", paaTrykket);
-  whisperValg.addEventListener("click", innstillingerVisualisering);
-  googleValg.addEventListener("click", innstillingerVisualisering);
-  webkitValg.addEventListener("click", innstillingerVisualisering);
-  testStemmeKnapp.addEventListener("click", function (e) {
-    if (stemmeTestTekstInput.value.length > 0) {
-      nyligSagt = [];
-      si(stemmeTestTekstInput.value);
-    }
-  });
-
-  stemmeHastighetValg.addEventListener("input", function (e) {
-    let prosentValgt = Number(
-      ((stemmeHastighetValg.value - stemmeHastighetValg.min) * 100) /
-        (stemmeHastighetValg.max - stemmeHastighetValg.min)
-    );
-    let avstandVenstre = Number(
-      window
-        .getComputedStyle(hastighetsDiv, null)
-        .getPropertyValue("padding-left")
-        .replace(/px/, "")
-    );
-    let bredde =
-      Number(
-        window
-          .getComputedStyle(hastighetsDiv, null)
-          .getPropertyValue("width")
-          .replace(/px/, "")
-      ) - valgSirkelBredde;
-
-    let newPosition = bredde * prosentValgt;
-    if (prosentValgt > 0) {
-      newPosition = newPosition / 100;
-    }
-    newPosition = newPosition + avstandVenstre + valgSirkelBredde / 2;
-
-    rangeV.innerHTML = `<span>${stemmeHastighetValg.value}%</span>`;
-    rangeV.style.left = `${newPosition}px`;
-  });
+  whisperValg.addEventListener("click", oppdaterInnstillingsKontroll);
+  googleValg.addEventListener("click", oppdaterInnstillingsKontroll);
+  webkitValg.addEventListener("click", oppdaterInnstillingsKontroll);
+  testStemmeKnapp.addEventListener("click", testStemmeTykket);
+  stemmeHastighetValg.addEventListener("input", hastighetsValgEndret);
   stemmeHastighetValg.value = stemmeHastighetProsent;
   stemmeHastighetValg.dispatchEvent(new Event("input", { bubbles: true }));
   setTimeout(lastInnStemmer, 1300);
-};
+}
 
-function innstillingerVisualisering() {
+document.body.onload = oppsett;
+
+function oppdaterInnstillingsKontroll() {
   if (whisperValg.checked) {
     whisperBeholder.classList.add("selected");
   } else {
@@ -119,7 +88,7 @@ function innstillingerVisualisering() {
   }
 }
 
-function sjekkStotteForMetoder() {
+function seHvilkeMetoderSomKanBrukes() {
   if (whisperTalegjennkjenning) {
     whisperBeholder.classList.remove("unavailable");
     whisperValg.disabled = false;
@@ -155,7 +124,7 @@ function sjekkStotteForMetoder() {
     !googleTalegjennkjenning
   ) {
     console.warn("Ingen metoder støttes");
-    //TODO leggTilStatusInfoItekstboks(   "  [INGEN TALE TIL TEKST METODER ER TILGJENGELIGE]  ");
+    console.debug("  [INGEN TALE TIL TEKST METODER ER TILGJENGELIGE]  ");
   }
 
   if (!"speechSynthesis" in window) {
@@ -209,7 +178,7 @@ function lastInnStemmer() {
   }
 }
 
-function fjernValgteRadioKnapper() {
+function fjernValgteMetoder() {
   whisperValg.checked = false;
   googleValg.checked = false;
   webkitValg.checked = false;
@@ -221,7 +190,7 @@ function visinnstillinger(paaEllerAv) {
     innstillinger.disabled = false;
     innstillinger.disabled = false;
     knapper.style.display = "none";
-    innstillingerVisualisering();
+    oppdaterInnstillingsKontroll();
   } else {
     innstillinger.style.display = "none";
     innstillinger.disabled = true;
@@ -237,7 +206,7 @@ function visTekstboks(avEllerPaa) {
   }
 }
 
-function endreinnstillingerTrykket() {
+function endreInnstillingerTrykket() {
   if (innstillinger.style.display === "none") {
     if (talegjennkjenning) {
       if (talegjennkjenningStatus !== 0) {
@@ -261,7 +230,7 @@ function paaTrykket() {
       talegjennkjenning.start();
     }
   } else {
-    sjekkStotteForMetoder();
+    seHvilkeMetoderSomKanBrukes();
     visinnstillinger(true);
   }
 }
@@ -278,7 +247,6 @@ function avTrykket() {
 
 function bekreftMetodeTrykket() {
   let noeErValgt = false;
-  //TODO ikke sett opp på nytt konstant? kan være fint for å fikse feil
   if (whisperValg.checked) {
     settOppWhisperTalegjennkjenning();
     noeErValgt = true;
@@ -289,7 +257,7 @@ function bekreftMetodeTrykket() {
     settOppWebkitTalegjennkjenning();
     noeErValgt = true;
   } else {
-    //TODO advar om at ingenting er valgt
+    console.warn("Ingen metode ble valgt");
   }
 
   if (noeErValgt) {
@@ -299,6 +267,42 @@ function bekreftMetodeTrykket() {
       paaTrykket();
     }
   }
+}
+
+function testStemmeTykket() {
+  if (stemmeTestTekstInput.value.length > 0) {
+    nyligSagt = [];
+    si(stemmeTestTekstInput.value);
+  }
+}
+
+function hastighetsValgEndret() {
+  let prosentValgt = Number(
+    ((stemmeHastighetValg.value - stemmeHastighetValg.min) * 100) /
+      (stemmeHastighetValg.max - stemmeHastighetValg.min)
+  );
+  let avstandVenstre = Number(
+    window
+      .getComputedStyle(hastighetsDiv, null)
+      .getPropertyValue("padding-left")
+      .replace(/px/, "")
+  );
+  let bredde =
+    Number(
+      window
+        .getComputedStyle(hastighetsDiv, null)
+        .getPropertyValue("width")
+        .replace(/px/, "")
+    ) - valgSirkelBredde;
+
+  let newPosition = bredde * prosentValgt;
+  if (prosentValgt > 0) {
+    newPosition = newPosition / 100;
+  }
+  newPosition = newPosition + avstandVenstre + valgSirkelBredde / 2;
+
+  rangeV.innerHTML = `<span>${stemmeHastighetValg.value}%</span>`;
+  rangeV.style.left = `${newPosition}px`;
 }
 
 function settOppWhisperTalegjennkjenning() {
@@ -317,15 +321,11 @@ function settOppWebkitTalegjennkjenning() {
   talegjennkjenning.maxAlternatives = 1;
 
   talegjennkjenning.onresult = function (event) {
-    /*while (tekstBoks.firstChild) {
-      tekstBoks.removeChild(tekstBoks.lastChild);
-    }*/
     var nyttInnhold = document.createElement("div");
-
     for (let i = 0; i < event.results.length; i++) {
       if (
         event.results[i].isFinal ||
-        event.results[i][0].confidence > hvorSikkerFoerDetVises
+        event.results[i][0].confidence > sikkerhetForAaVise
       ) {
         var p = document.createElement("p");
         p.innerHTML = event.results[i][0].transcript + ".";
@@ -344,21 +344,21 @@ function settOppWebkitTalegjennkjenning() {
         nyttInnhold.appendChild(p);
         if (
           event.results[i].isFinal ||
-          event.results[i][0].confidence > hvorSikkerFoerDetSies
+          event.results[i][0].confidence > sikkerhetForAaSi
         ) {
           si(event.results[i][0].transcript);
         }
       }
     }
     tekstBoks.innerHTML = forrigeInnhold + nyttInnhold.innerHTML;
-    scrollTilNederst();
+    blaTilNederstITekst();
   };
 
   talegjennkjenning.onstart = function () {
     talegjennkjenningStatus = 2;
     console.info("Tale startet");
-    //TODO leggTilStatusInfoItekstboks("  [LYTTER NÅ]  ");
-    scrollTilNederst();
+    console.debug("  [LYTTER NÅ]  ");
+    blaTilNederstITekst();
     tekstBoks.classList.remove("av");
     tekstBoks.classList.add("paa");
     holdSkjermVaaken();
@@ -389,7 +389,7 @@ function settOppWebkitTalegjennkjenning() {
   webkitValg.checked = true;
 }
 
-const ordErstanninger = {
+const ordErstattninger = {
   /*
   " komma": ",",
   " punktum": ".",
@@ -399,14 +399,13 @@ const ordErstanninger = {
 };
 
 function erstattOrd(tekst) {
-  for (const [key, value] of Object.entries(ordErstanninger)) {
+  for (const [key, value] of Object.entries(ordErstattninger)) {
     tekst = tekst.replaceAll(key, value);
   }
-
   return tekst;
 }
 
-function scrollTilNederst() {
+function blaTilNederstITekst() {
   tekstBoks.scroll({
     top: tekstBoks.scrollHeight,
     left: 0,
@@ -416,7 +415,7 @@ function scrollTilNederst() {
 
 function sluttetAaLytte() {
   forrigeInnhold = tekstBoks.innerHTML;
-  //TODO leggTilStatusInfoItekstboks("  [SLUTTET Å LYTTE]  ");
+  console.debug("  [SLUTTET Å LYTTE]  ");
   tekstBoks.classList.add("av");
   tekstBoks.classList.remove("paa");
   if (talegjennkjenningStatus == 2) {
@@ -428,7 +427,7 @@ function sluttetAaLytte() {
   }
 }
 
-function tekstUtenSagt(tekstSomSjekkes) {
+function tekstUtenTidligereSagt(tekstSomSjekkes) {
   if (tekstSomSjekkes) {
     let tekstSomSjekkesListe = tekstSomSjekkes.toLowerCase().split(" ");
     tekstSomSjekkesListe = tekstSomSjekkesListe.filter((item) => item);
@@ -457,7 +456,7 @@ function tekstUtenSagt(tekstSomSjekkes) {
 
 function si(tekst) {
   if (stemmeValg.value !== "Ingen" && tekst.length > 0) {
-    let nyeOrdIListe = tekstUtenSagt(tekst);
+    let nyeOrdIListe = tekstUtenTidligereSagt(tekst);
     if (!nyeOrdIListe || nyeOrdIListe.length < 1) {
       return;
     }
@@ -492,7 +491,7 @@ window.addEventListener(
       tekstBoks.style.display !== "none"
     ) {
       console.info("Fortsetter");
-      //TODO leggTilStatusInfoItekstboks("  [KLAR TIL Å FORTSETTE]  ");
+      console.debug("  [KLAR TIL Å FORTSETTE]  ");
       talegjennkjenningStatus = 1;
       talegjennkjenning.start();
     }
@@ -503,14 +502,6 @@ window.addEventListener(
 window.speechSynthesis.onvoiceschanged = function (e) {
   lastInnStemmer();
 };
-
-window.addEventListener(
-  "click",
-  function (event) {
-    //document.body.requestFullscreen();
-  },
-  false
-);
 
 document.addEventListener("keydown", tastetrykk, false);
 
@@ -525,7 +516,7 @@ function tastetrykk(e) {
 window.addEventListener(
   "resize",
   function (event) {
-    scrollTilNederst();
+    blaTilNederstITekst();
   },
   true
 );
@@ -574,7 +565,7 @@ function fargeFraSikkerhet(sikkerhet) {
   );
 }
 
-function fullskjermAvPaa(element) {
+function endreFullskjermTilstand(element) {
   if (
     !document.fullscreenElement &&
     !document.mozFullScreenElement &&
