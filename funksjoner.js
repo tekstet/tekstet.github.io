@@ -421,7 +421,6 @@ function blaTilNederstITekst() {
     tekstBoks.scrollHeight - tekstBoks.clientHeight - tekstBoks.scrollTop <
       tekstBoks.offsetHeight * 1.25
   ) {
-    console.log("scroller");
     tekstBoks.scroll({
       top: tekstBoks.scrollHeight,
       left: 0,
@@ -561,9 +560,6 @@ tekstBoks.addEventListener(
   "scroll",
   function () {
     if (!ignorerScroll) {
-      if (forrigeScrollRetning != tekstBoks.scrollTop < forrigeScrollPosisjon) {
-        console.log(!forrigeScrollRetning);
-      }
       forrigeScrollRetning = tekstBoks.scrollTop < forrigeScrollPosisjon;
       forrigeScrollPosisjon =
         tekstBoks.scrollTop <= 0 ? 0 : tekstBoks.scrollTop;
