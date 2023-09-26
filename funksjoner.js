@@ -364,19 +364,7 @@ function settOppWebkitTalegjennkjenning() {
   };
 
   talegjennkjenning.onend = function () {
-    console.info("Tale avsluttet");
-    talegjennkjenningStatus = false;
-    forrigeStartTid = -1;
-    if (onsketTalegjennkjenningStatus) {
-      stoppOgStartTalegjennkjenning();
-      setTimeout(function () {
-        if (!talegjennkjenningStatus) {
-          visSluttetAaLytte();
-        }
-      }, 150);
-    } else {
-      visSluttetAaLytte();
-    }
+    taleHarSluttet();
   };
 
   talegjennkjenning.onerror = function (hendelse) {
@@ -464,7 +452,14 @@ function startTalegjennkjenning() {
 function stoppTalegjennkjenning() {
   onsketTalegjennkjenningStatus = false;
   if (talegjennkjenning) {
-    talegjennkjenning.stop();
+    try {
+      talegjennkjenning.stop();
+    } catch (feilmelding) {
+      //Fikk "aborted" på tlf
+      console.log(feilmelding);
+      console.log(feilmelding.msg);
+      taleHarSluttet();
+    }
   } else {
     console.warn("Talgjennkjenningsoppsett forsvant");
     visTekstboks(false);
@@ -487,6 +482,21 @@ function stoppOgStartTalegjennkjenning() {
     } else {
       console.error(DOMException);
     }
+  }
+}
+function taleHarSluttet() {
+  console.info("Tale avsluttet");
+  talegjennkjenningStatus = false;
+  forrigeStartTid = -1;
+  if (onsketTalegjennkjenningStatus) {
+    stoppOgStartTalegjennkjenning();
+    setTimeout(function () {
+      if (!talegjennkjenningStatus) {
+        visSluttetAaLytte();
+      }
+    }, 150);
+  } else {
+    visSluttetAaLytte();
   }
 }
 
@@ -638,8 +648,8 @@ async function holdSkjermVaaken() {
     try {
       skjermLaas = await navigator.wakeLock.request("screen");
       console.debug("Hindrer skjerm i å sovne");
-    } catch (err) {
-      console.error(err.name, err.message);
+    } catch (feilemelding) {
+      console.error(feilemelding.name, feilemelding.message);
     }
     return skjermLaas;
   }
