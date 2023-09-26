@@ -16,6 +16,9 @@ var skjermLaas;
 var forrigeInnhold = "";
 var nyligSagt = [];
 const synth = window.speechSynthesis;
+var forrigeScrollPosisjon = 0;
+var forrigeScrollRetning = false;
+var ignorerScroll = false;
 
 //HTML elementer
 var tekstBoks = document.getElementById("tekst-innhold");
@@ -346,7 +349,11 @@ function settOppWebkitTalegjennkjenning() {
         }
       }
     }
+    ignorerScroll = true;
     tekstBoks.innerHTML = forrigeInnhold + nyttInnhold.innerHTML;
+    setTimeout(function () {
+      ignorerScroll = false;
+    }, 10);
     blaTilNederstITekst();
   };
 
@@ -361,7 +368,11 @@ function settOppWebkitTalegjennkjenning() {
 
   talegjennkjenning.onend = function () {
     console.info("Tale avsluttet");
-    sluttetAaLytte();
+    if (talegjennkjenningStatus === 2) {
+      stoppOgStartTalegjennkjenning();
+    } else {
+      sluttetAaLytte();
+    }
   };
 
   talegjennkjenning.onerror = function (event) {
@@ -404,11 +415,19 @@ function erstattOrd(tekst) {
 }
 
 function blaTilNederstITekst() {
-  tekstBoks.scroll({
-    top: tekstBoks.scrollHeight,
-    left: 0,
-    behavior: "smooth", //Auto for rask, smooth for treg
-  });
+  //Hvis bruker ser paa teksten lengre opp, ikke scroll til bunnen
+  if (
+    forrigeScrollRetning === false &&
+    tekstBoks.scrollHeight - tekstBoks.clientHeight - tekstBoks.scrollTop <
+      tekstBoks.offsetHeight * 1.25
+  ) {
+    console.log("scroller");
+    tekstBoks.scroll({
+      top: tekstBoks.scrollHeight,
+      left: 0,
+      behavior: "smooth", //Auto for rask, smooth for treg
+    });
+  }
 }
 
 function startTalegjennkjenning() {
@@ -536,6 +555,21 @@ window.addEventListener(
     blaTilNederstITekst();
   },
   true
+);
+
+tekstBoks.addEventListener(
+  "scroll",
+  function () {
+    if (!ignorerScroll) {
+      if (forrigeScrollRetning != tekstBoks.scrollTop < forrigeScrollPosisjon) {
+        console.log(!forrigeScrollRetning);
+      }
+      forrigeScrollRetning = tekstBoks.scrollTop < forrigeScrollPosisjon;
+      forrigeScrollPosisjon =
+        tekstBoks.scrollTop <= 0 ? 0 : tekstBoks.scrollTop;
+    }
+  },
+  false
 );
 
 function isScreenLockSupported() {
