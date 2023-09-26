@@ -15,6 +15,7 @@ var googleTalegjennkjenning = false;
 var webSpeechTalegjennkjenning;
 var whisperTalegjennkjenning = false;
 var skjermLaas;
+var forsoekUtenTekst = 0;
 var forrigeInnhold = "";
 var nyligSagt = [];
 const synth = window.speechSynthesis;
@@ -128,11 +129,11 @@ function seHvilkeMetoderSomKanBrukes() {
     !webSpeechTalegjennkjenning &&
     !googleTalegjennkjenning
   ) {
-    console.warn("Ingen metoder støttes");
+    visStatus("Ingen metoder støttes i denne nettleseren. Prøv Chrome f.eks.");
   }
 
   if (!"speechSynthesis" in window) {
-    console.warn("Tale syntese støttes ikke i denne nettleseren");
+    visStatus("Ingen metoder støttes i denne nettleseren. Prøv Chrome f.eks.");
   }
 
   if (!document.fullscreenEnabled) {
@@ -351,6 +352,9 @@ function settOppWebkitTalegjennkjenning() {
       ignorerScroll = false;
     }, 10);
     blaTilNederstITekst();
+    if (forsoekUtenTekst > 0) {
+      forsoekUtenTekst = 0;
+    }
   };
 
   talegjennkjenning.onstart = function () {
@@ -360,6 +364,7 @@ function settOppWebkitTalegjennkjenning() {
     blaTilNederstITekst();
     tekstBoks.classList.remove("av");
     tekstBoks.classList.add("paa");
+    fjernStatus();
     holdSkjermVaaken();
   };
 
@@ -405,12 +410,13 @@ function erstattOrd(tekst) {
   return tekst;
 }
 
-function blaTilNederstITekst() {
+function blaTilNederstITekst(uansett) {
   //Hvis bruker ser paa teksten lengre opp, ikke scroll til bunnen
   if (
-    forrigeScrollRetning === false &&
-    tekstBoks.scrollHeight - tekstBoks.clientHeight - tekstBoks.scrollTop <
-      tekstBoks.offsetHeight * 1.25
+    uansett ||
+    (forrigeScrollRetning === false &&
+      tekstBoks.scrollHeight - tekstBoks.clientHeight - tekstBoks.scrollTop <
+        tekstBoks.offsetHeight * 1.25)
   ) {
     tekstBoks.scroll({
       top: tekstBoks.scrollHeight,
@@ -426,25 +432,43 @@ function startTalegjennkjenning() {
     console.debug("Starter ikke på nytt siden alt ser ut til å være i orden");
     //stoppOgStartTalegjennkjenning();
   } else {
-    if (talegjennkjenning !== null && talegjennkjenning !== undefined) {
-      if (forrigeStartTid === -1) {
-        //Forste gang vi starter
-        forrigeStartTid = performance.now();
-        talegjennkjenning.start();
-      } else if (performance.now() - forrigeStartTid > 60000) {
-        console.warn("Fikk ikke starta. Har ventet en stund.");
-        //TODO sett opp paa nytt
+    if (forsoekUtenTekst < 10) {
+      forsoekUtenTekst += 1;
+      if (talegjennkjenning !== null && talegjennkjenning !== undefined) {
+        if (forrigeStartTid === -1) {
+          //Forste gang vi starter
+          forrigeStartTid = performance.now();
+          talegjennkjenning.start();
+        } else if (performance.now() - forrigeStartTid > 8000) {
+          //Kan henge seg opp på mobil her
+          stoppTalegjennkjenning();
+          talegjennkjenning = null;
+          talegjennkjenningStatus = false;
+          onsketTalegjennkjenningStatus = false;
+          forrigeStartTid = -1;
+          setTimeout(bekreftMetodeTrykket, 100);
+        } else {
+          console.debug(
+            "Starter ikke på nytt siden vi nylig prøvde og fortsatt venter"
+          );
+        }
       } else {
-        console.debug(
-          "Starter ikke på nytt siden vi nylig prøvde og fortsatt venter"
-        );
+        console.warn("Talgjennkjenningsoppsett forsvant");
+        visTekstboks(false);
+        seHvilkeMetoderSomKanBrukes();
+        visinnstillinger(true);
+        //TODO vurder å heller rette opp automatisk?
       }
     } else {
-      console.warn("Talgjennkjenningsoppsett forsvant");
-      visTekstboks(false);
-      seHvilkeMetoderSomKanBrukes();
-      visinnstillinger(true);
-      //TODO rett opp automatisk?
+      console.warn(
+        "For mange forsøk på kort tid. Forsikkre deg om at du ikke har flere kopier gående på denne maskinen."
+      );
+      visStatus(
+        "Kunne ikke starte. Er det flere kopier av Auto-tolk som kjører nå?",
+        "viktig"
+      );
+      onsketTalegjennkjenningStatus = false;
+      forsoekUtenTekst = 0;
     }
   }
 }
@@ -483,6 +507,7 @@ function stoppOgStartTalegjennkjenning() {
     }
   }
 }
+
 function taleHarSluttet() {
   console.info("Tale avsluttet");
   talegjennkjenningStatus = false;
@@ -500,11 +525,31 @@ function taleHarSluttet() {
 }
 
 function visSluttetAaLytte(ikkeVent) {
-  forrigeInnhold = tekstBoks.innerHTML;
+  forrigeInnhold = tekstBoks.innerHTML.replace(
+    /<p class="status.*<\/p>/gim,
+    ""
+  );
+
   console.debug("[SLUTTET Å LYTTE]");
   tekstBoks.classList.add("av");
   tekstBoks.classList.remove("paa");
   laSkjermSovne();
+}
+
+function fjernStatus() {
+  const statusElementer = tekstBoks.getElementsByClassName("status");
+  while (statusElementer.length > 0) {
+    statusElementer[0].parentNode.removeChild(statusElementer[0]);
+  }
+}
+
+function visStatus(beskjed, type) {
+  fjernStatus();
+  var statusP = document.createElement("p");
+  statusP.innerHTML = beskjed;
+  statusP.classList += "status " + type;
+  tekstBoks.appendChild(statusP);
+  blaTilNederstITekst(true);
 }
 
 function tekstUtenTidligereSagt(tekstSomSjekkes) {
