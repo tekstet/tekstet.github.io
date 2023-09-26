@@ -3,7 +3,6 @@ var stemmeHastighetProsent = 85; //Ser ut som 50-200 funker, men folk liker 80-1
 var sikkerhetForAaVise = 0.5; //Fra 0.0 til 1.0
 var sikkerhetForAaSi = 0.9; //Fra 0.0 til 1.0
 var startUtenAtBrukerTrykker = true;
-var startTaleMedEnGang = false;
 const valgSirkelBredde = 20;
 
 //Globale variabler
@@ -125,7 +124,6 @@ function seHvilkeMetoderSomKanBrukes() {
     !googleTalegjennkjenning
   ) {
     console.warn("Ingen metoder støttes");
-    console.debug("  [INGEN TALE TIL TEKST METODER ER TILGJENGELIGE]  ");
   }
 
   if (!"speechSynthesis" in window) {
@@ -211,8 +209,7 @@ function endreInnstillingerTrykket() {
   if (innstillinger.style.display === "none") {
     if (talegjennkjenning) {
       if (talegjennkjenningStatus !== 0) {
-        talegjennkjenningStatus = 1;
-        talegjennkjenning.stop();
+        stoppTalegjennkjenning();
       }
     }
     visinnstillinger(true);
@@ -226,9 +223,8 @@ function endreInnstillingerTrykket() {
 function paaTrykket() {
   if (talegjennkjenning) {
     if (talegjennkjenningStatus === 0) {
-      talegjennkjenningStatus = 1;
       fortsettNaarTilbake = true;
-      talegjennkjenning.start();
+      startTalegjennkjenning();
     }
   } else {
     seHvilkeMetoderSomKanBrukes();
@@ -239,9 +235,8 @@ function paaTrykket() {
 function avTrykket() {
   if (talegjennkjenning) {
     if (talegjennkjenningStatus !== 0) {
-      talegjennkjenningStatus = 1;
       fortsettNaarTilbake = false;
-      talegjennkjenning.stop();
+      stoppTalegjennkjenning();
     }
   }
 }
@@ -331,12 +326,12 @@ function settOppWebkitTalegjennkjenning() {
         var p = document.createElement("p");
         p.innerHTML = event.results[i][0].transcript + ".";
         p.style.color = fargeFraSikkerhet(event.results[i][0].confidence);
-        console.debug(
+        /*console.debug(
           event.results[i][0].transcript +
             " (" +
             event.results[i][0].confidence +
             ")"
-        );
+        );*/
         if (event.results[i].isFinal) {
           p.classList += "endelig";
         } else {
@@ -358,7 +353,6 @@ function settOppWebkitTalegjennkjenning() {
   talegjennkjenning.onstart = function () {
     talegjennkjenningStatus = 2;
     console.info("Tale startet");
-    console.debug("  [LYTTER NÅ]  ");
     blaTilNederstITekst();
     tekstBoks.classList.remove("av");
     tekstBoks.classList.add("paa");
@@ -366,39 +360,24 @@ function settOppWebkitTalegjennkjenning() {
   };
 
   talegjennkjenning.onend = function () {
-    sluttetAaLytte();
     console.info("Tale avsluttet");
-    if (startTaleMedEnGang && talegjennkjenningStatus === 0) {
-      startTaleMedEnGang = false;
-      talegjennkjenningStatus = 1;
-      talegjennkjenning.start();
-    }
+    sluttetAaLytte();
   };
 
   talegjennkjenning.onerror = function (event) {
-    if (event.error === "not-allowed") {
-      talegjennkjenningStatus = 1;
+    if (["no-speech", "network"].includes(event.error)) {
+      stoppOgStartTalegjennkjenning();
+    } else if (event.error === "not-allowed") {
+      stoppTalegjennkjenning();
       sluttetAaLytte();
-    } else if (event.error === "no-speech") {
-      if (talegjennkjenningStatus === 0) {
-        talegjennkjenningStatus = 1;
-        talegjennkjenning.start();
-      } else {
-        startTaleMedEnGang = true;
-      }
     } else {
       console.error(event.error);
-      sluttetAaLytte();
+      stoppOgStartTalegjennkjenning();
     }
   };
 
   talegjennkjenning.onspeechend = function () {
     console.debug("Tale sluttet");
-    if (startTaleMedEnGang && talegjennkjenningStatus === 0) {
-      startTaleMedEnGang = false;
-      talegjennkjenningStatus = 1;
-      talegjennkjenning.start();
-    }
   };
 
   talegjennkjenning.onnomatch = function (event) {
@@ -432,18 +411,39 @@ function blaTilNederstITekst() {
   });
 }
 
+function startTalegjennkjenning() {
+  talegjennkjenningStatus = 1;
+  talegjennkjenning.start();
+}
+
+function stoppTalegjennkjenning() {
+  talegjennkjenningStatus = 1;
+  talegjennkjenning.stop();
+}
+
+function stoppOgStartTalegjennkjenning() {
+  stoppTalegjennkjenning();
+  try {
+    startTalegjennkjenning();
+    return;
+  } catch (DOMException) {
+    if (DOMException.message.includes("already started")) {
+      console.debug("allerede startet");
+      stoppTalegjennkjenning();
+      setTimeout(stoppOgStartTalegjennkjenning, 150);
+    } else {
+      console.error(DOMException);
+    }
+  }
+}
+
 function sluttetAaLytte() {
   forrigeInnhold = tekstBoks.innerHTML;
   console.debug("  [SLUTTET Å LYTTE]  ");
   tekstBoks.classList.add("av");
   tekstBoks.classList.remove("paa");
-  if (talegjennkjenningStatus == 2) {
-    talegjennkjenningStatus = 1;
-    talegjennkjenning.start();
-  } else {
-    talegjennkjenningStatus = 0;
-    laSkjermSovne();
-  }
+  talegjennkjenningStatus = 0;
+  laSkjermSovne();
 }
 
 function tekstUtenTidligereSagt(tekstSomSjekkes) {
@@ -510,9 +510,7 @@ window.addEventListener(
       tekstBoks.style.display !== "none"
     ) {
       console.info("Fortsetter");
-      console.debug("  [KLAR TIL Å FORTSETTE]  ");
-      talegjennkjenningStatus = 1;
-      talegjennkjenning.start();
+      startTalegjennkjenning();
     }
   },
   false
@@ -557,7 +555,7 @@ async function holdSkjermVaaken() {
 }
 
 function laSkjermSovne() {
-  if (typeof skjermLaas !== "undeinfed" && skjermLaas != null) {
+  if (typeof skjermLaas !== "undefined" && skjermLaas != null) {
     skjermLaas.release().then(() => {
       console.debug("Lar skjerm sovne");
       skjermLaas = null;
