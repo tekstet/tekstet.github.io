@@ -369,9 +369,9 @@ function settOppWebkitTalegjennkjenning() {
     sluttetAaLytte();
     console.info("Tale avsluttet");
     if (startTaleMedEnGang && talegjennkjenningStatus === 0) {
+      startTaleMedEnGang = false;
       talegjennkjenningStatus = 1;
       talegjennkjenning.start();
-      startTaleMedEnGang = false;
     }
   };
 
@@ -380,7 +380,7 @@ function settOppWebkitTalegjennkjenning() {
       talegjennkjenningStatus = 1;
       sluttetAaLytte();
     } else if (event.error === "no-speech") {
-      if (talegjennkjenningStatus === 2) {
+      if (talegjennkjenningStatus === 0) {
         talegjennkjenningStatus = 1;
         talegjennkjenning.start();
       } else {
@@ -395,9 +395,9 @@ function settOppWebkitTalegjennkjenning() {
   talegjennkjenning.onspeechend = function () {
     console.debug("Tale sluttet");
     if (startTaleMedEnGang && talegjennkjenningStatus === 0) {
+      startTaleMedEnGang = false;
       talegjennkjenningStatus = 1;
       talegjennkjenning.start();
-      startTaleMedEnGang = false;
     }
   };
 
