@@ -83,7 +83,7 @@ body {
 #knapper > * {
   font-size: min(11vh, 2.3rem);
   margin: 0 1vw 0.3vw 1vw;
-  padding: min(5vwvh, 0.5rem);
+  padding: min(2vw, 0.8rem);
   color: white;
 }
 input {
@@ -115,7 +115,7 @@ button:hover {
   position: fixed;
   top: 0;
   right: 0;
-  padding: 1.2vw;
+  padding: min(2vw, 0.8rem);
   white-space: nowrap;
   margin: 1vw;
   color: white;

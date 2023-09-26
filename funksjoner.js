@@ -2,11 +2,12 @@
 var stemmeHastighetProsent = 85; //Ser ut som 50-200 funker, men folk liker 80-100
 var sikkerhetForAaVise = 0.5; //Fra 0.0 til 1.0
 var sikkerhetForAaSi = 0.9; //Fra 0.0 til 1.0
-var startAutomatisk = true;
-var fortsettNaarTilbake = false;
+var startUtenAtBrukerTrykker = true;
+var startTaleMedEnGang = false;
 const valgSirkelBredde = 20;
 
 //Globale variabler
+var fortsettNaarTilbake = false;
 var talegjennkjenning;
 var googleTalegjennkjenning = false;
 var webSpeechTalegjennkjenning;
@@ -263,7 +264,7 @@ function bekreftMetodeTrykket() {
   if (noeErValgt) {
     visinnstillinger(false);
     visTekstboks(true);
-    if (startAutomatisk) {
+    if (startUtenAtBrukerTrykker) {
       paaTrykket();
     }
   }
@@ -367,19 +368,37 @@ function settOppWebkitTalegjennkjenning() {
   talegjennkjenning.onend = function () {
     sluttetAaLytte();
     console.info("Tale avsluttet");
+    if (startTaleMedEnGang && talegjennkjenningStatus === 0) {
+      talegjennkjenningStatus = 1;
+      talegjennkjenning.start();
+      startTaleMedEnGang = false;
+    }
   };
 
   talegjennkjenning.onerror = function (event) {
     if (event.error === "not-allowed") {
       talegjennkjenningStatus = 1;
+      sluttetAaLytte();
+    } else if (event.error === "no-speech") {
+      if (talegjennkjenningStatus === 2) {
+        talegjennkjenningStatus = 1;
+        talegjennkjenning.start();
+      } else {
+        startTaleMedEnGang = true;
+      }
     } else {
-      console.error("Tale feilmelding");
+      console.error(event.error);
+      sluttetAaLytte();
     }
-    sluttetAaLytte();
   };
 
   talegjennkjenning.onspeechend = function () {
     console.debug("Tale sluttet");
+    if (startTaleMedEnGang && talegjennkjenningStatus === 0) {
+      talegjennkjenningStatus = 1;
+      talegjennkjenning.start();
+      startTaleMedEnGang = false;
+    }
   };
 
   talegjennkjenning.onnomatch = function (event) {
