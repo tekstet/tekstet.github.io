@@ -292,7 +292,7 @@ function hastighetsValgEndret() {
 }
 
 function oppsettForNyTalegjennkjenning() {
-  if (talegjennkjenning) {
+  if (talegjennkjenning !== null && talegjennkjenning !== undefined) {
     stoppTalegjennkjenning();
   }
 }
@@ -317,31 +317,31 @@ function settOppWebkitTalegjennkjenning() {
 
   talegjennkjenning.onresult = function (hendelse) {
     var nyttInnhold = document.createElement("div");
-    for (let i = 0; i < event.results.length; i++) {
+    for (let i = 0; i < hendelse.results.length; i++) {
       if (
-        event.results[i].isFinal ||
-        event.results[i][0].confidence > sikkerhetForAaVise
+        hendelse.results[i].isFinal ||
+        hendelse.results[i][0].confidence > sikkerhetForAaVise
       ) {
         var p = document.createElement("p");
-        p.innerHTML = event.results[i][0].transcript + ".";
-        p.style.color = fargeFraSikkerhet(event.results[i][0].confidence);
+        p.innerHTML = hendelse.results[i][0].transcript + ".";
+        p.style.color = fargeFraSikkerhet(hendelse.results[i][0].confidence);
         /*console.debug(
-          event.results[i][0].transcript +
+          hendelse.results[i][0].transcript +
             " (" +
-            event.results[i][0].confidence +
+            hendelse.results[i][0].confidence +
             ")"
         );*/
-        if (event.results[i].isFinal) {
+        if (hendelse.results[i].isFinal) {
           p.classList += "endelig";
         } else {
           p.classList += "ganske-sikker";
         }
         nyttInnhold.appendChild(p);
         if (
-          event.results[i].isFinal ||
-          event.results[i][0].confidence > sikkerhetForAaSi
+          hendelse.results[i].isFinal ||
+          hendelse.results[i][0].confidence > sikkerhetForAaSi
         ) {
-          si(event.results[i][0].transcript);
+          si(hendelse.results[i][0].transcript);
         }
       }
     }
@@ -368,12 +368,12 @@ function settOppWebkitTalegjennkjenning() {
   };
 
   talegjennkjenning.onerror = function (hendelse) {
-    if (["no-speech", "network"].includes(event.error)) {
+    if (["no-speech", "network"].includes(hendelse.error)) {
       stoppOgStartTalegjennkjenning();
-    } else if (event.error === "not-allowed") {
+    } else if (hendelse.error === "not-allowed") {
       stoppTalegjennkjenning();
     } else {
-      console.error(event.error);
+      console.error(hendelse.error);
       stoppOgStartTalegjennkjenning();
     }
   };
@@ -426,7 +426,7 @@ function startTalegjennkjenning() {
     console.debug("Starter ikke på nytt siden alt ser ut til å være i orden");
     //stoppOgStartTalegjennkjenning();
   } else {
-    if (talegjennkjenning) {
+    if (talegjennkjenning !== null && talegjennkjenning !== undefined) {
       if (forrigeStartTid === -1) {
         //Forste gang vi starter
         forrigeStartTid = performance.now();
@@ -451,11 +451,10 @@ function startTalegjennkjenning() {
 
 function stoppTalegjennkjenning() {
   onsketTalegjennkjenningStatus = false;
-  if (talegjennkjenning) {
+  if (talegjennkjenning !== null && talegjennkjenning !== undefined) {
     try {
       talegjennkjenning.stop();
     } catch (feilmelding) {
-      //Fikk "aborted" på tlf
       console.log(feilmelding);
       console.log(feilmelding.msg);
       taleHarSluttet();
