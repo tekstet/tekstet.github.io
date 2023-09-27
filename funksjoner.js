@@ -24,6 +24,7 @@ var forrigeScrollRetning = false;
 var ignorerScroll = false;
 
 //HTML elementer
+var overskrift = document.getElementById("overskrift");
 var tekstBoks = document.getElementById("tekst-innhold");
 var innstillinger = document.getElementById("innstillinger");
 var whisperValg = document.getElementById("whisper");
@@ -364,6 +365,7 @@ function settOppWebkitTalegjennkjenning() {
     blaTilNederstITekst();
     tekstBoks.classList.remove("av");
     tekstBoks.classList.add("paa");
+    overskrift.style.display = "none";
     fjernStatus();
     holdSkjermVaaken();
   };
@@ -533,6 +535,7 @@ function visSluttetAaLytte(ikkeVent) {
   console.debug("[SLUTTET Å LYTTE]");
   tekstBoks.classList.add("av");
   tekstBoks.classList.remove("paa");
+  overskrift.style.display = "flex";
   laSkjermSovne();
 }
 
@@ -720,11 +723,17 @@ function skalerTall(tall, min1, max1, min2, max2) {
 }
 
 function fargeFraSikkerhet(sikkerhet) {
+  if (sikkerhet < 0.7) {
+    return "rgb(255,0,0)";
+  } else {
+    return "rgb(0,0,0)";
+  }
+  /*
   return (
     "rgb(" +
     (255 - Math.round(skalerTall(sikkerhet, 0.1, 0.94, 0, 255))) +
     ",0,0)"
-  );
+  );*/
 }
 
 function endreFullskjermTilstand(element) {

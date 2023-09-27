@@ -32,7 +32,7 @@ body {
 }
 
 #tekst-innhold {
-  font-size: min(26vh, 5rem);
+  font-size: min(26vh, 2.5rem);
   padding-left: 0.4rem;
   padding-right: 0.4rem;
   padding-bottom: 0.2rem;
@@ -58,11 +58,11 @@ body {
 }
 
 .endelig {
-  font-weight: normal;
+  font-weight: bold;
 }
 
 .ganske-sikker {
-  font-weight: lighter;
+  font-weight: bold;
 }
 .av {
   border: min(2vw, 2rem) solid #e71d36;
